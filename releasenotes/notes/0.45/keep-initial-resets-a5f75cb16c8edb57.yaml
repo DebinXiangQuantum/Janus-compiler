@@ -1,6 +1,0 @@
----
-upgrade:
-  - |
-    Disables the use of :class:`.RemoveResetInZeroState` in the preset passmanagers.
-    This better aligns circuits to the notion of arbitrary initial states
-    unless explicitly set to zeros with resets.

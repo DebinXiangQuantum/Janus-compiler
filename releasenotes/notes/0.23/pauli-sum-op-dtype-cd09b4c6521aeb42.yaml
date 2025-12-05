@@ -1,6 +1,0 @@
----
-features:
-  - |
-    Added ``dtype`` argument to :meth:`~.PauliSumOp.from_list`
-    for passing type information to the internal
-    :class:`~.SparsePauliOp`.

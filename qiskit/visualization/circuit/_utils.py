@@ -33,12 +33,7 @@ from qiskit.circuit import (
 )
 from qiskit.circuit.annotated_operation import AnnotatedOperation, InverseModifier, PowerModifier
 from qiskit.circuit.controlflow import condition_resources
-from qiskit.circuit.library import (
-    PauliEvolutionGate,
-    PauliProductMeasurement,
-    PhaseOracleGate,
-    BitFlipOracleGate,
-)
+from qiskit.circuit.library import PauliEvolutionGate, PhaseOracleGate, BitFlipOracleGate
 from qiskit.circuit.tools import pi_check
 from qiskit.converters import circuit_to_dag
 from qiskit.utils import optionals as _optionals
@@ -115,7 +110,7 @@ def get_gate_ctrl_text(op, drawer, style=None):
         elif (
             (gate_text == op.name and op_type not in (Gate, Instruction))
             or (gate_text == base_name and base_type not in (Gate, Instruction))
-        ) and (op_type not in [PauliEvolutionGate, PauliProductMeasurement]):
+        ) and (op_type is not PauliEvolutionGate):
             gate_text = f"$\\mathrm{{{gate_text.capitalize()}}}$"
         else:
             gate_text = f"$\\mathrm{{{gate_text}}}$"
@@ -129,7 +124,7 @@ def get_gate_ctrl_text(op, drawer, style=None):
     elif (
         (gate_text == op.name and op_type not in (Gate, Instruction))
         or (gate_text == base_name and base_type not in (Gate, Instruction))
-    ) and (op_type not in [PauliEvolutionGate, PauliProductMeasurement]):
+    ) and (op_type is not PauliEvolutionGate):
         gate_text = gate_text.capitalize()
 
     if anno_text:
@@ -144,7 +139,6 @@ def get_param_str(op, drawer, ndigits=3):
         not hasattr(op, "params")
         or any(isinstance(param, np.ndarray) for param in op.params)
         or any(isinstance(param, QuantumCircuit) for param in op.params)
-        or op.name == "pauli_product_measurement"
     ):
         return ""
 
@@ -506,31 +500,32 @@ def _sorted_nodes(dag_layer):
 
 
 def _get_gate_span(qubits, node, measure_arrows):
-    """Return the ordered wires this node would occupy when drawn."""
+    """Get the list of qubits drawing this gate would cover
+    qiskit-terra #2802
+    """
+    min_index = len(qubits)
+    max_index = 0
+    for qreg in node.qargs:
+        index = qubits.index(qreg)
+
+        if index < min_index:
+            min_index = index
+        if index > max_index:
+            max_index = index
 
     if isinstance(node.op, ControlFlowOp) and not isinstance(node.op, BoxOp):
         # Because of wrapping boxes for mpl control flow ops, this
         # type of op must be the only op in the layer
         # BoxOps are excepted because they have one block executed unconditionally
-        return qubits
-
-    qubit_index_map = {bit: idx for idx, bit in enumerate(qubits)}
-    qubit_indices = [qubit_index_map[qarg] for qarg in node.qargs]
-
-    if not qubit_indices:
-        # We should not have operations with only classical wires,
-        # and the operations with no qubits shouldn't collide with anything.
-        return []
-
-    min_index = min(qubit_indices)
-    max_index = max(qubit_indices)
-
-    if node.cargs and (
-        (measure_arrows and isinstance(node.op, Measure)) or not isinstance(node.op, Measure)
+        span = qubits
+    elif node.cargs and (
+        (measure_arrows and isinstance(node.op, Measure)) or getattr(node.op, "condition", None)
     ):
-        return qubits[min_index:]
+        span = qubits[min_index : len(qubits)]
+    else:
+        span = qubits[min_index : max_index + 1]
 
-    return qubits[min_index : max_index + 1]
+    return span
 
 
 def _any_crossover(qubits, node, nodes, measure_arrows):

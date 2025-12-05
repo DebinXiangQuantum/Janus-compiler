@@ -1,4 +1,0 @@
----
-fixes:
-  - |
-    :class:`.GenericBackendV2` now correctly allows :class:`.BoxOp` when ``control_flow=True``.

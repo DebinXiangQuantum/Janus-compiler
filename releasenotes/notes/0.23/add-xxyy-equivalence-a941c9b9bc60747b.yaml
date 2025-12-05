@@ -1,5 +1,0 @@
----
-features:
-  - |
-    Equivalence rules for :class:`.XXPlusYYGate` and :class:`.XXMinusYYGate` are
-    now available in the standard equivalence library shipped with Qiskit Terra.

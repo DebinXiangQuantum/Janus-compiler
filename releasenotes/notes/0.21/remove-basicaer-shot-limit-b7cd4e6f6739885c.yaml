@@ -1,4 +1,0 @@
----
-upgrade:
-  - |
-    The measurement shot limit for the :class:`.BasicAer` backend has been removed.

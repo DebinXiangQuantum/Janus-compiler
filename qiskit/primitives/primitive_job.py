@@ -23,13 +23,8 @@ from .base.base_primitive_job import BasePrimitiveJob, ResultT
 
 
 class PrimitiveJob(BasePrimitiveJob[ResultT, JobStatus]):
-    """Handle to a job from the reference implementations of the primitives in Qiskit.
-
-    This is a concrete implementation of the :class:`.BasePrimitiveJob` interface.  See the
-    documentation of that class for a discussion of the interface.
-
-    Primitives implementers looking to create their own job classes should not subclass this, but
-    instead subclass the interface definition :class:`.BasePrimitiveJob`.
+    """
+    Primitive job class for the reference implementations of Primitives.
     """
 
     def __init__(self, function, *args, **kwargs):

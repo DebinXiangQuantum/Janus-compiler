@@ -1,6 +1,0 @@
----
-features:
-  - |
-    Added :class:`.GlobalPhaseGate` which can be applied to add a global phase
-    on the :class:`.QuantumCircuit`.
-

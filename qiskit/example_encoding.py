@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
-from encode import bid_amplitude_encode_qiskit, schmidt_encode_qiskit, efficient_sparse_qiskit
+from qiskit.encode import bid_amplitude_encode_qiskit, schmidt_encode_qiskit, efficient_sparse_qiskit
 
 # 准备示例数据：归一化的向量
 def normalize_data(data):

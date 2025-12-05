@@ -1,5 +1,0 @@
----
-fixes:
-  - |
-    Fixed an issue with the :meth:`.NLocal.add_layer` method incorrectly
-    appending layers if the :obj:`.NLocal` object had already been built.

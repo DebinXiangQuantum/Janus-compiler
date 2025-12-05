@@ -1,6 +1,0 @@
----
-upgrade:
-  - |
-    Updated :meth:`~qiskit.dagcircuit.DAGCircuit.replace_block_with_op` to now
-    return the new `~qiskit.dagcircuit.DAGOpNode` that is created when the block
-    is replaced.

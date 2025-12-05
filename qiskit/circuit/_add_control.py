@@ -215,24 +215,34 @@ def apply_basic_controlled_gate(circuit, gate, controls, target):
 
     This implements multi-control operations for every gate in
     ``EFFICIENTLY_CONTROLLED_GATES``.
+
     """
     num_ctrl_qubits = len(controls)
 
     if gate.name == "x":
         circuit.mcx(controls, target)
-
     elif gate.name == "rx":
-        angle = gate.params[0]
-        circuit.mcrx(angle, controls, target, use_basis_gates=False)
-
+        circuit.mcrx(
+            gate.definition.data[0].operation.params[0],
+            controls,
+            target,
+            use_basis_gates=False,
+        )
     elif gate.name == "ry":
-        angle = gate.params[0]
-        circuit.mcry(angle, controls, target, mode="noancilla", use_basis_gates=False)
-
+        circuit.mcry(
+            gate.definition.data[0].operation.params[0],
+            controls,
+            target,
+            mode="noancilla",
+            use_basis_gates=False,
+        )
     elif gate.name == "rz":
-        angle = gate.params[0]
-        circuit.mcrz(angle, controls, target, use_basis_gates=False)
-
+        circuit.mcrz(
+            gate.definition.data[0].operation.params[0],
+            controls,
+            target,
+            use_basis_gates=False,
+        )
     elif gate.name == "p":
         from qiskit.circuit.library import MCPhaseGate
 
@@ -240,13 +250,11 @@ def apply_basic_controlled_gate(circuit, gate, controls, target):
             MCPhaseGate(gate.params[0], num_ctrl_qubits),
             controls[:] + [target],
         )
-
     elif gate.name == "cx":
         circuit.mcx(
             controls[:] + [target[0]],  # CX has two targets
             target[1],
         )
-
     elif gate.name == "cz":
         circuit.h(target[1])
         circuit.mcx(
@@ -254,7 +262,6 @@ def apply_basic_controlled_gate(circuit, gate, controls, target):
             target[1],
         )
         circuit.h(target[1])
-
     elif gate.name == "u":
         theta, phi, lamb = gate.params
         if num_ctrl_qubits == 1:
@@ -279,17 +286,14 @@ def apply_basic_controlled_gate(circuit, gate, controls, target):
                 circuit.mcry(theta, controls, target, use_basis_gates=False)
                 circuit.mcrz(phi, controls, target, use_basis_gates=False)
                 circuit.mcp((phi + lamb) / 2, controls[1:], controls[0])
-
     elif gate.name == "z":
         circuit.h(target)
         circuit.mcx(controls, target)
         circuit.h(target)
-
     elif gate.name == "y":
         circuit.sdg(target)
         circuit.mcx(controls, target)
         circuit.s(target)
-
     elif gate.name == "h":
         circuit.s(target)
         circuit.h(target)
@@ -298,17 +302,14 @@ def apply_basic_controlled_gate(circuit, gate, controls, target):
         circuit.tdg(target)
         circuit.h(target)
         circuit.sdg(target)
-
     elif gate.name == "sx":
         circuit.h(target)
         circuit.mcp(pi / 2, controls, target)
         circuit.h(target)
-
     elif gate.name == "sxdg":
         circuit.h(target)
         circuit.mcp(3 * pi / 2, controls, target)
         circuit.h(target)
-
     else:
         raise CircuitError(f"Gate {gate} not in supported basis.")
 

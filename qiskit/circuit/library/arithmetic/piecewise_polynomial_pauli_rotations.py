@@ -453,7 +453,7 @@ class PiecewisePolynomialPauliRotationsGate(Gate):
 
     def _define(self):
         num_state_qubits = self.num_qubits - self.num_compare - 1
-        circuit = QuantumCircuit(self.num_qubits)
+        circuit = QuantumCircuit(self.num_qubits, name=self.name)
         qr_state = circuit.qubits[:num_state_qubits]
 
         if len(self.breakpoints) > 2:

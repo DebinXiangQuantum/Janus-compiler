@@ -15,25 +15,10 @@ Predicates for operators.
 """
 
 from __future__ import annotations
-import functools
 import numpy as np
 
 ATOL_DEFAULT = 1e-8
 RTOL_DEFAULT = 1e-5
-
-
-@functools.cache
-def _identity_matrix_cache(size):
-    m = np.eye(size)
-    m.flags.writeable = False
-    return m
-
-
-def _identity_matrix(size):
-    """Return identity matrix"""
-    if size <= 64:
-        return _identity_matrix_cache(size)
-    return np.eye(size)
 
 
 def matrix_equal(mat1, mat2, ignore_phase=False, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT, props=None):
@@ -69,8 +54,10 @@ def matrix_equal(mat1, mat2, ignore_phase=False, rtol=RTOL_DEFAULT, atol=ATOL_DE
     if rtol is None:
         rtol = RTOL_DEFAULT
 
-    mat1 = np.asarray(mat1)
-    mat2 = np.asarray(mat2)
+    if not isinstance(mat1, np.ndarray):
+        mat1 = np.array(mat1)
+    if not isinstance(mat2, np.ndarray):
+        mat2 = np.array(mat2)
 
     if mat1.shape != mat2.shape:
         return False
@@ -100,9 +87,10 @@ def matrix_equal(mat1, mat2, ignore_phase=False, rtol=RTOL_DEFAULT, atol=ATOL_DE
 
 def is_square_matrix(mat):
     """Test if an array is a square matrix."""
-    shape = np.shape(mat)
-    if len(shape) != 2:
+    mat = np.array(mat)
+    if mat.ndim != 2:
         return False
+    shape = mat.shape
     return shape[0] == shape[1]
 
 
@@ -112,7 +100,7 @@ def is_diagonal_matrix(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
         atol = ATOL_DEFAULT
     if rtol is None:
         rtol = RTOL_DEFAULT
-    mat = np.asarray(mat)
+    mat = np.array(mat)
     if mat.ndim != 2:
         return False
     return np.allclose(mat, np.diag(np.diagonal(mat)), rtol=rtol, atol=atol)
@@ -124,7 +112,7 @@ def is_symmetric_matrix(op, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
         atol = ATOL_DEFAULT
     if rtol is None:
         rtol = RTOL_DEFAULT
-    mat = np.asarray(op)
+    mat = np.array(op)
     if mat.ndim != 2:
         return False
     return np.allclose(mat, mat.T, rtol=rtol, atol=atol)
@@ -136,7 +124,7 @@ def is_hermitian_matrix(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
         atol = ATOL_DEFAULT
     if rtol is None:
         rtol = RTOL_DEFAULT
-    mat = np.asarray(mat)
+    mat = np.array(mat)
     if mat.ndim != 2:
         return False
     return np.allclose(mat, np.conj(mat.T), rtol=rtol, atol=atol)
@@ -164,7 +152,7 @@ def is_identity_matrix(mat, ignore_phase=False, rtol=RTOL_DEFAULT, atol=ATOL_DEF
         atol = ATOL_DEFAULT
     if rtol is None:
         rtol = RTOL_DEFAULT
-    mat = np.asarray(mat)
+    mat = np.array(mat)
     if mat.ndim != 2:
         return False
     if ignore_phase:
@@ -174,13 +162,13 @@ def is_identity_matrix(mat, ignore_phase=False, rtol=RTOL_DEFAULT, atol=ATOL_DEF
         theta = np.angle(mat[0, 0])
         mat = np.exp(-1j * theta) * mat
     # Check if square identity
-    iden = _identity_matrix(len(mat))
+    iden = np.eye(len(mat))
     return np.allclose(mat, iden, rtol=rtol, atol=atol)
 
 
 def is_unitary_matrix(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
     """Test if an array is a unitary matrix."""
-    mat = np.asarray(mat)
+    mat = np.array(mat)
     # Compute A^dagger.A and see if it is identity matrix
     mat = np.conj(mat.T).dot(mat)
     return is_identity_matrix(mat, ignore_phase=False, rtol=rtol, atol=atol)
@@ -188,8 +176,8 @@ def is_unitary_matrix(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
 
 def is_isometry(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
     """Test if an array is an isometry."""
-    mat = np.asarray(mat)
+    mat = np.array(mat)
     # Compute A^dagger.A and see if it is identity matrix
-    iden = _identity_matrix(mat.shape[1])
+    iden = np.eye(mat.shape[1])
     mat = np.conj(mat.T).dot(mat)
     return np.allclose(mat, iden, rtol=rtol, atol=atol)

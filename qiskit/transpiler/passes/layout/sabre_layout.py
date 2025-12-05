@@ -10,7 +10,8 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Layout selection using the SABRE bidirectional search approach from Li et al."""
+"""Layout selection using the SABRE bidirectional search approach from Li et al.
+"""
 
 import copy
 import logging

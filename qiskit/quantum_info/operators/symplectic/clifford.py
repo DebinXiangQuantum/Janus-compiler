@@ -33,12 +33,7 @@ from qiskit.quantum_info.operators.scalar_op import ScalarOp
 from qiskit.quantum_info.operators.symplectic.base_pauli import _count_y
 
 from .base_pauli import BasePauli
-from .clifford_circuits import (
-    _append_circuit,
-    _append_operation,
-    _prepend_operation,
-    _prepend_circuit,
-)
+from .clifford_circuits import _append_circuit, _append_operation
 
 
 class Clifford(BaseOperator, AdjointMixin, Operation):
@@ -438,11 +433,6 @@ class Clifford(BaseOperator, AdjointMixin, Operation):
                 return _append_circuit(self.copy(), other, qargs=qargs)
             if isinstance(other, Instruction):
                 return _append_operation(self.copy(), other, qargs=qargs)
-        else:
-            if isinstance(other, QuantumCircuit):
-                return _prepend_circuit(self.copy(), other, qargs=qargs)
-            if isinstance(other, Instruction):
-                return _prepend_operation(self.copy(), other, qargs=qargs)
 
         if not isinstance(other, Clifford):
             # Not copying is safe since we're going to drop our only reference to `other` at the end

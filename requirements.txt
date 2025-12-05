@@ -1,6 +1,11 @@
-rustworkx>=0.15.0
-numpy>=1.17,<3
-scipy>=1.5
-dill>=0.3
+# Qiskit 项目依赖
+# 基于 Janus-compiler 中的 Qiskit 模块运行所需的依赖包
+
+# 核心依赖
+numpy>=1.16.0
+rustworkx>=0.12.0
+scipy>=1.5.0
+
+# 其他依赖
+dill>=0.3.5
 stevedore>=3.0.0
-typing-extensions

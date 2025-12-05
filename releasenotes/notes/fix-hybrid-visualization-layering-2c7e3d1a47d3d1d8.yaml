@@ -1,4 +1,0 @@
----
-fixes:
-  - |
-    Fixed the circuit text drawer so that circuit instructions with classical wires are drawn in separate layers.

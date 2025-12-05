@@ -1,5 +1,0 @@
----
-upgrade_pulse:
-  - |
-    Removed the deprecated class ``qiskit.pulse.instructions.Call``
-    No alternative pulse instruction is provided.

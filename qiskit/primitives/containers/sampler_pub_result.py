@@ -25,13 +25,7 @@ from .pub_result import PubResult
 
 
 class SamplerPubResult(PubResult):
-    """Result of Sampler Pub.
-
-    This is a :class:`.SamplerV2`-specific subclass of :class:`.PubResult` that adds helper methods
-    to deal with the bit-array like :class:`.BitArray` data directly (implicitly going via the
-    :class:`.DataBin` in :attr:`data`).  See :class:`.PubResult` for more documentation on how to
-    use this class.
-    """
+    """Result of Sampler Pub."""
 
     def join_data(self, names: Iterable[str] | None = None) -> BitArray | np.ndarray:
         """Join data from many registers into one data container.

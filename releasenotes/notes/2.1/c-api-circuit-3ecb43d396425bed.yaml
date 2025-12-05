@@ -1,5 +1,0 @@
----
-features_circuits:
-  - |
-    The C API for Qiskit has been extended with support for building and
-    interacting with quantum circuits.

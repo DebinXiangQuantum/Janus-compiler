@@ -84,7 +84,6 @@ sys.modules["qiskit._accelerate.euler_one_qubit_decomposer"] = (
 sys.modules["qiskit._accelerate.optimize_1q_gates_decomposition"] = (
     _accelerate.optimize_1q_gates_decomposition
 )
-sys.modules["qiskit._accelerate.optimize_clifford_t"] = _accelerate.optimize_clifford_t
 sys.modules["qiskit._accelerate.nlayout"] = _accelerate.nlayout
 sys.modules["qiskit._accelerate.optimize_1q_gates"] = _accelerate.optimize_1q_gates
 sys.modules["qiskit._accelerate.pauli_expval"] = _accelerate.pauli_expval
@@ -120,9 +119,6 @@ sys.modules["qiskit._accelerate.synthesis.discrete_basis"] = _accelerate.synthes
 sys.modules["qiskit._accelerate.synthesis.multi_controlled"] = (
     _accelerate.synthesis.multi_controlled
 )
-sys.modules["qiskit._accelerate.synthesis.pauli_product_measurement"] = (
-    _accelerate.synthesis.pauli_product_measurement
-)
 sys.modules["qiskit._accelerate.synthesis.qft"] = _accelerate.synthesis.qft
 sys.modules["qiskit._accelerate.split_2q_unitaries"] = _accelerate.split_2q_unitaries
 sys.modules["qiskit._accelerate.gate_direction"] = _accelerate.gate_direction
@@ -137,7 +133,6 @@ sys.modules["qiskit._accelerate.high_level_synthesis"] = _accelerate.high_level_
 sys.modules["qiskit._accelerate.remove_identity_equiv"] = _accelerate.remove_identity_equiv
 sys.modules["qiskit._accelerate.circuit_duration"] = _accelerate.circuit_duration
 sys.modules["qiskit._accelerate.cos_sin_decomp"] = _accelerate.cos_sin_decomp
-sys.modules["qiskit._accelerate.qsd"] = _accelerate.qsd
 sys.modules["qiskit._accelerate.wrap_angles"] = _accelerate.wrap_angles
 sys.modules["qiskit._accelerate.angle_bound_registry"] = _accelerate.angle_bound_registry
 sys.modules["qiskit._accelerate.litinski_transformation"] = _accelerate.litinski_transformation

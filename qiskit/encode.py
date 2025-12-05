@@ -1,9 +1,9 @@
 import numpy as np
-from circuit import QuantumCircuit, QuantumRegister
-from circuit.exceptions import QiskitError
-from circuit.quantum_info import Operator, Statevector
+from qiskit.circuit import QuantumCircuit, QuantumRegister
+from qiskit.circuit.exceptions import QiskitError
+from qiskit.quantum_info import Operator, Statevector
 import scipy.linalg
-from circuit.library import UGate, Initialize
+from qiskit.circuit.library import UGate, Initialize
 from math import log2, ceil, floor, pi, acos
 from typing import Dict, List, Union
 def bid_amplitude_encode_qiskit(data: list[float], split: int = 0) -> QuantumCircuit:
