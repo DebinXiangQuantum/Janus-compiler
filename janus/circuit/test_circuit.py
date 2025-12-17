@@ -90,37 +90,50 @@ def test_to_dict():
     print("Layers:", qc.to_layers())
 
 
-def test_qiskit_conversion():
-    """测试与 Qiskit 的转换"""
-    try:
-        from janus.circuit.converters import to_qiskit, from_qiskit
-        from qiskit import QuantumCircuit
-        
-        # Janus -> Qiskit
-        jc = Circuit(2)
-        jc.h(0)
-        jc.cx(0, 1)
-        jc.rx(np.pi/2, 0)
-        
-        qc = to_qiskit(jc)
-        print("\n=== Qiskit Conversion ===")
-        print("Janus circuit:")
-        print(jc)
-        print("\nConverted to Qiskit:")
-        print(qc)
-        
-        # Qiskit -> Janus
-        qc2 = QuantumCircuit(2)
-        qc2.h(0)
-        qc2.cx(0, 1)
-        
-        jc2 = from_qiskit(qc2)
-        print("\nQiskit circuit converted back to Janus:")
-        print(jc2)
-        
-    except ImportError:
-        print("\n=== Qiskit Conversion ===")
-        print("Qiskit not installed, skipping conversion test")
+def test_array_conversion():
+    """测试数组转换"""
+    from janus.circuit.converters import to_instruction_list, from_instruction_list
+    
+    print("\n=== Array Conversion ===")
+    
+    # 创建电路
+    jc = Circuit(2)
+    jc.h(0)
+    jc.cx(0, 1)
+    jc.rx(np.pi/2, 0)
+    
+    # 转换为元组格式数组
+    inst_list = to_instruction_list(jc)
+    print("Circuit -> Tuple array:")
+    print(inst_list)
+    
+    # 从元组格式数组重建电路
+    jc2 = from_instruction_list(inst_list)
+    print("\nTuple array -> Circuit:")
+    print(jc2)
+    
+    # 也支持字典格式
+    dict_list = [
+        {'name': 'h', 'qubits': [0], 'params': []},
+        {'name': 'cx', 'qubits': [0, 1], 'params': []},
+        {'name': 'rz', 'qubits': [1], 'params': [np.pi/4]}
+    ]
+    print("\nDict array -> Circuit:")
+    jc3 = from_instruction_list(dict_list)
+    print(jc3)
+
+
+def test_circuit_data_formats():
+    """测试电路数据格式"""
+    print("\n=== Circuit Data Formats ===")
+    
+    qc = Circuit(2)
+    qc.h(0)
+    qc.cx(0, 1)
+    qc.rx(np.pi/2, 0)
+    
+    print("Janus (dict):", qc.to_dict_list())
+    print("Tuple:", qc.to_tuple_list())
 
 
 if __name__ == "__main__":
@@ -130,6 +143,7 @@ if __name__ == "__main__":
     test_circuit_copy()
     test_gate_matrix()
     test_to_dict()
-    test_qiskit_conversion()
+    test_array_conversion()
+    test_circuit_data_formats()
     
     print("\n✓ All tests passed!")

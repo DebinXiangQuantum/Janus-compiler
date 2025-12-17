@@ -13,8 +13,8 @@ from ..gate import Gate
 class HGate(Gate):
     """Hadamard 门"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('h', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('h', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -23,10 +23,10 @@ class HGate(Gate):
         ], dtype=complex) / np.sqrt(2)
     
     def inverse(self) -> 'HGate':
-        return HGate(self._label)
+        return HGate(self._params.copy(), self._label)
     
     def copy(self) -> 'HGate':
-        gate = HGate(self._label)
+        gate = HGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -34,8 +34,8 @@ class HGate(Gate):
 class XGate(Gate):
     """Pauli-X 门 (NOT 门)"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('x', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('x', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -44,10 +44,10 @@ class XGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'XGate':
-        return XGate(self._label)
+        return XGate(self._params.copy(), self._label)
     
     def copy(self) -> 'XGate':
-        gate = XGate(self._label)
+        gate = XGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -55,8 +55,8 @@ class XGate(Gate):
 class YGate(Gate):
     """Pauli-Y 门"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('y', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('y', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -65,10 +65,10 @@ class YGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'YGate':
-        return YGate(self._label)
+        return YGate(self._params.copy(), self._label)
     
     def copy(self) -> 'YGate':
-        gate = YGate(self._label)
+        gate = YGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -76,8 +76,8 @@ class YGate(Gate):
 class ZGate(Gate):
     """Pauli-Z 门"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('z', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('z', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -86,10 +86,10 @@ class ZGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'ZGate':
-        return ZGate(self._label)
+        return ZGate(self._params.copy(), self._label)
     
     def copy(self) -> 'ZGate':
-        gate = ZGate(self._label)
+        gate = ZGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -97,8 +97,8 @@ class ZGate(Gate):
 class SGate(Gate):
     """S 门 (sqrt(Z))"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('s', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('s', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -107,10 +107,10 @@ class SGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'SdgGate':
-        return SdgGate(self._label)
+        return SdgGate(self._params.copy(), self._label)
     
     def copy(self) -> 'SGate':
-        gate = SGate(self._label)
+        gate = SGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -118,8 +118,8 @@ class SGate(Gate):
 class SdgGate(Gate):
     """S† 门 (S 的共轭转置)"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('sdg', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('sdg', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -128,10 +128,10 @@ class SdgGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'SGate':
-        return SGate(self._label)
+        return SGate(self._params.copy(), self._label)
     
     def copy(self) -> 'SdgGate':
-        gate = SdgGate(self._label)
+        gate = SdgGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -139,8 +139,8 @@ class SdgGate(Gate):
 class TGate(Gate):
     """T 门 (sqrt(S))"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('t', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('t', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -149,10 +149,10 @@ class TGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'TdgGate':
-        return TdgGate(self._label)
+        return TdgGate(self._params.copy(), self._label)
     
     def copy(self) -> 'TGate':
-        gate = TGate(self._label)
+        gate = TGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -160,8 +160,8 @@ class TGate(Gate):
 class TdgGate(Gate):
     """T† 门 (T 的共轭转置)"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('tdg', 1, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('tdg', 1, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -170,10 +170,10 @@ class TdgGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'TGate':
-        return TGate(self._label)
+        return TGate(self._params.copy(), self._label)
     
     def copy(self) -> 'TdgGate':
-        gate = TdgGate(self._label)
+        gate = TdgGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -303,8 +303,8 @@ class UGate(Gate):
 class CXGate(Gate):
     """CNOT (CX) 门 - 受控 X 门"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('cx', 2, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('cx', 2, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -315,10 +315,10 @@ class CXGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'CXGate':
-        return CXGate(self._label)
+        return CXGate(self._params.copy(), self._label)
     
     def copy(self) -> 'CXGate':
-        gate = CXGate(self._label)
+        gate = CXGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -326,8 +326,8 @@ class CXGate(Gate):
 class CZGate(Gate):
     """CZ 门 - 受控 Z 门"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('cz', 2, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('cz', 2, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -338,10 +338,10 @@ class CZGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'CZGate':
-        return CZGate(self._label)
+        return CZGate(self._params.copy(), self._label)
     
     def copy(self) -> 'CZGate':
-        gate = CZGate(self._label)
+        gate = CZGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -377,8 +377,8 @@ class CRZGate(Gate):
 class SwapGate(Gate):
     """SWAP 门 - 交换两个量子比特"""
     
-    def __init__(self, label: Optional[str] = None):
-        super().__init__('swap', 2, [], label)
+    def __init__(self, params: Optional[List] = None, label: Optional[str] = None):
+        super().__init__('swap', 2, params or [], label)
     
     def to_matrix(self) -> np.ndarray:
         return np.array([
@@ -389,10 +389,10 @@ class SwapGate(Gate):
         ], dtype=complex)
     
     def inverse(self) -> 'SwapGate':
-        return SwapGate(self._label)
+        return SwapGate(self._params.copy(), self._label)
     
     def copy(self) -> 'SwapGate':
-        gate = SwapGate(self._label)
+        gate = SwapGate(self._params.copy(), self._label)
         gate._qubits = self._qubits.copy()
         return gate
 
@@ -415,5 +415,42 @@ class Barrier(Gate):
     
     def copy(self) -> 'Barrier':
         gate = Barrier(self._num_qubits, self._label)
+        gate._qubits = self._qubits.copy()
+        return gate
+
+
+class Measure(Gate):
+    """测量操作 - 将量子比特测量到经典比特"""
+    
+    def __init__(self, label: Optional[str] = None):
+        super().__init__('measure', 1, [], label)
+    
+    def to_matrix(self) -> np.ndarray:
+        # 测量不是酉操作，返回投影算符
+        raise NotImplementedError("Measure is not a unitary operation")
+    
+    def inverse(self) -> 'Measure':
+        raise NotImplementedError("Measure cannot be inverted")
+    
+    def copy(self) -> 'Measure':
+        gate = Measure(self._label)
+        gate._qubits = self._qubits.copy()
+        return gate
+
+
+class Reset(Gate):
+    """重置操作 - 将量子比特重置为 |0⟩"""
+    
+    def __init__(self, label: Optional[str] = None):
+        super().__init__('reset', 1, [], label)
+    
+    def to_matrix(self) -> np.ndarray:
+        raise NotImplementedError("Reset is not a unitary operation")
+    
+    def inverse(self) -> 'Reset':
+        raise NotImplementedError("Reset cannot be inverted")
+    
+    def copy(self) -> 'Reset':
+        gate = Reset(self._label)
         gate._qubits = self._qubits.copy()
         return gate

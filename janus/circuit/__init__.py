@@ -9,6 +9,9 @@ from .instruction import Instruction
 from .layer import Layer
 from .circuit import Circuit
 from .qubit import Qubit, QuantumRegister
+from .clbit import Clbit, ClassicalRegister
+from .parameter import Parameter, ParameterExpression
+from .dag import DAGCircuit, DAGNode, circuit_to_dag, dag_to_circuit
 
 # 标准门
 from .library import (
@@ -17,7 +20,9 @@ from .library import (
     YGate,
     ZGate,
     SGate,
+    SdgGate,
     TGate,
+    TdgGate,
     RXGate,
     RYGate,
     RZGate,
@@ -27,6 +32,8 @@ from .library import (
     CRZGate,
     SwapGate,
     Barrier,
+    Measure,
+    Reset,
 )
 
 __all__ = [
@@ -38,13 +45,25 @@ __all__ = [
     'Circuit',
     'Qubit',
     'QuantumRegister',
+    'Clbit',
+    'ClassicalRegister',
+    # 参数化
+    'Parameter',
+    'ParameterExpression',
+    # DAG
+    'DAGCircuit',
+    'DAGNode',
+    'circuit_to_dag',
+    'dag_to_circuit',
     # 标准门
     'HGate',
     'XGate',
     'YGate',
     'ZGate',
     'SGate',
+    'SdgGate',
     'TGate',
+    'TdgGate',
     'RXGate',
     'RYGate',
     'RZGate',
@@ -54,4 +73,6 @@ __all__ = [
     'CRZGate',
     'SwapGate',
     'Barrier',
+    'Measure',
+    'Reset',
 ]

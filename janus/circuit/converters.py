@@ -1,12 +1,9 @@
 """
 Janus 电路转换器
 
-提供与 Qiskit 等其他框架的互转功能
+提供电路数组格式转换功能
 """
-from typing import Optional, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from qiskit import QuantumCircuit as QiskitCircuit
+from typing import Optional
 
 from .circuit import Circuit
 from .gate import Gate
@@ -37,88 +34,6 @@ GATE_MAP = {
 }
 
 
-def to_qiskit(circuit: Circuit, barrier: bool = False) -> 'QiskitCircuit':
-    """
-    将 Janus Circuit 转换为 Qiskit QuantumCircuit
-    
-    Args:
-        circuit: Janus 电路
-        barrier: 是否在每层之间添加 barrier
-    
-    Returns:
-        Qiskit QuantumCircuit
-    """
-    try:
-        from qiskit import QuantumCircuit as QiskitCircuit
-    except ImportError:
-        raise ImportError("Qiskit is required for this conversion. Install with: pip install qiskit")
-    
-    qc = QiskitCircuit(circuit.n_qubits)
-    
-    if barrier:
-        # 按层添加
-        for layer in circuit.layers:
-            for inst in layer:
-                _add_gate_to_qiskit(qc, inst.name, inst.qubits, inst.params)
-            qc.barrier()
-    else:
-        # 按顺序添加
-        for inst in circuit.instructions:
-            _add_gate_to_qiskit(qc, inst.name, inst.qubits, inst.params)
-    
-    return qc
-
-
-def _add_gate_to_qiskit(qc, name: str, qubits: list, params: list):
-    """向 Qiskit 电路添加门"""
-    name = name.lower()
-    
-    if name in ('rx', 'ry', 'rz'):
-        getattr(qc, name)(float(params[0]), qubits[0])
-    elif name in ('cx', 'cz', 'swap'):
-        getattr(qc, name)(qubits[0], qubits[1])
-    elif name in ('h', 'x', 'y', 'z', 's', 't'):
-        getattr(qc, name)(qubits[0])
-    elif name in ('u', 'u3'):
-        qc.u(float(params[0]), float(params[1]), float(params[2]), qubits[0])
-    elif name == 'crz':
-        qc.crz(float(params[0]), qubits[0], qubits[1])
-    elif name == 'barrier':
-        pass  # 跳过 barrier
-    else:
-        print(f"Warning: Unknown gate '{name}', skipping")
-
-
-def from_qiskit(qiskit_circuit: 'QiskitCircuit') -> Circuit:
-    """
-    将 Qiskit QuantumCircuit 转换为 Janus Circuit
-    
-    Args:
-        qiskit_circuit: Qiskit 量子电路
-    
-    Returns:
-        Janus Circuit
-    """
-    circuit = Circuit(qiskit_circuit.num_qubits)
-    
-    for instruction in qiskit_circuit.data:
-        op = instruction.operation
-        name = op.name.lower()
-        qubits = [q._index for q in instruction.qubits]
-        params = [float(p) if not isinstance(p, float) else p for p in op.params]
-        
-        # 跳过 barrier 和 measure
-        if name in ('barrier', 'measure'):
-            continue
-        
-        # 创建对应的门
-        gate = _create_gate(name, params)
-        if gate is not None:
-            circuit.append(gate, qubits)
-    
-    return circuit
-
-
 def _create_gate(name: str, params: list) -> Optional[Gate]:
     """根据名称和参数创建门"""
     name = name.lower()
@@ -141,3 +56,57 @@ def _create_gate(name: str, params: list) -> Optional[Gate]:
         return gate_class(params[0], params[1], params[2])
     
     return None
+
+
+def to_instruction_list(circuit: Circuit) -> list:
+    """
+    将 Janus Circuit 转换为指令数组 (元组格式)
+    
+    Args:
+        circuit: Janus 电路
+    
+    Returns:
+        [(name, qubits, params), ...] 格式的列表
+    """
+    return [(inst.name, inst.qubits, inst.params) for inst in circuit.instructions]
+
+
+def from_instruction_list(instructions: list, n_qubits: int = None) -> Circuit:
+    """
+    从指令数组创建 Janus Circuit
+    
+    Args:
+        instructions: [(name, qubits, params), ...] 或 [{'name':..., 'qubits':..., 'params':...}, ...]
+        n_qubits: 量子比特数，如果不指定则自动推断
+    
+    Returns:
+        Janus Circuit
+    """
+    # 自动推断量子比特数
+    if n_qubits is None:
+        max_qubit = 0
+        for inst in instructions:
+            if isinstance(inst, dict):
+                qubits = inst['qubits']
+            else:
+                qubits = inst[1]
+            if qubits:
+                max_qubit = max(max_qubit, max(qubits))
+        n_qubits = max_qubit + 1
+    
+    circuit = Circuit(n_qubits)
+    
+    for inst in instructions:
+        # 支持两种格式
+        if isinstance(inst, dict):
+            name = inst['name']
+            qubits = inst['qubits']
+            params = inst.get('params', [])
+        else:
+            name, qubits, params = inst
+        
+        gate = _create_gate(name, params)
+        if gate is not None:
+            circuit.append(gate, qubits)
+    
+    return circuit

@@ -8,7 +8,9 @@ from .standard_gates import (
     YGate,
     ZGate,
     SGate,
+    SdgGate,
     TGate,
+    TdgGate,
     RXGate,
     RYGate,
     RZGate,
@@ -18,8 +20,10 @@ from .standard_gates import (
     CZGate,
     CRZGate,
     SwapGate,
-    # 特殊
+    # 特殊操作
     Barrier,
+    Measure,
+    Reset,
 )
 
 __all__ = [
@@ -28,7 +32,9 @@ __all__ = [
     'YGate',
     'ZGate',
     'SGate',
+    'SdgGate',
     'TGate',
+    'TdgGate',
     'RXGate',
     'RYGate',
     'RZGate',
@@ -38,4 +44,6 @@ __all__ = [
     'CRZGate',
     'SwapGate',
     'Barrier',
+    'Measure',
+    'Reset',
 ]

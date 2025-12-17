@@ -3,7 +3,7 @@ Janus 量子电路
 
 核心电路类，提供量子电路的构建和操作
 """
-from typing import List, Optional, Union, Iterator
+from typing import List, Optional, Union, Iterator, Dict, Set
 import uuid
 import copy
 import numpy as np
@@ -12,6 +12,8 @@ from .gate import Gate
 from .instruction import Instruction
 from .layer import Layer
 from .qubit import Qubit, QuantumRegister
+from .clbit import Clbit, ClassicalRegister
+from .parameter import Parameter, ParameterExpression, is_parameterized
 
 
 class Circuit:
@@ -30,6 +32,7 @@ class Circuit:
     def __init__(
         self,
         n_qubits: int,
+        n_clbits: int = 0,
         name: Optional[str] = None
     ):
         """
@@ -37,10 +40,12 @@ class Circuit:
         
         Args:
             n_qubits: 量子比特数量
+            n_clbits: 经典比特数量（默认为 0）
             name: 电路名称（可选）
         """
         self._id = uuid.uuid4()
         self._n_qubits = n_qubits
+        self._n_clbits = n_clbits
         self._name = name
         
         # 指令列表（顺序存储）
@@ -50,8 +55,12 @@ class Circuit:
         self._layers: Optional[List[Layer]] = None
         self._layers_dirty = True
         
-        # 量子寄存器
+        # 量子寄存器和经典寄存器
         self._qreg = QuantumRegister(n_qubits, "q")
+        self._creg = ClassicalRegister(n_clbits, "c") if n_clbits > 0 else None
+        
+        # 参数追踪
+        self._parameters: Set[Parameter] = set()
     
     @property
     def id(self) -> uuid.UUID:
@@ -63,8 +72,27 @@ class Circuit:
     
     @property
     def num_qubits(self) -> int:
-        """兼容 qiskit 命名"""
         return self._n_qubits
+    
+    @property
+    def n_clbits(self) -> int:
+        return self._n_clbits
+    
+    @property
+    def num_clbits(self) -> int:
+        return self._n_clbits
+    
+    @property
+    def clbits(self) -> List[Clbit]:
+        """获取所有经典比特"""
+        if self._creg:
+            return list(self._creg)
+        return []
+    
+    @property
+    def parameters(self) -> Set[Parameter]:
+        """获取电路中的所有参数"""
+        return self._parameters.copy()
     
     @property
     def name(self) -> Optional[str]:
@@ -81,7 +109,6 @@ class Circuit:
     
     @property
     def data(self) -> List[Instruction]:
-        """兼容 qiskit 命名"""
         return self._instructions
     
     @property
@@ -131,6 +158,16 @@ class Circuit:
             clbits: 作用的经典比特（可选）
         """
         self._validate_qubits(qubits)
+        if clbits:
+            self._validate_clbits(clbits)
+        
+        # 追踪参数
+        for param in gate.params:
+            if isinstance(param, Parameter):
+                self._parameters.add(param)
+            elif isinstance(param, ParameterExpression):
+                self._parameters.update(param.parameters)
+        
         instruction = Instruction(gate, qubits, clbits)
         self._instructions.append(instruction)
         self._layers_dirty = True
@@ -146,77 +183,125 @@ class Circuit:
             if q < 0 or q >= self._n_qubits:
                 raise ValueError(f"Qubit index {q} out of range [0, {self._n_qubits})")
     
+    def _validate_clbits(self, clbits: List[int]):
+        """验证经典比特索引"""
+        for c in clbits:
+            if c < 0 or c >= self._n_clbits:
+                raise ValueError(f"Clbit index {c} out of range [0, {self._n_clbits})")
+    
     # ==================== 标准门方法 ====================
     
-    def h(self, qubit: int) -> 'Circuit':
+    def h(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 Hadamard 门"""
         from .library.standard_gates import HGate
-        return self._add_gate(HGate(), [qubit])
+        gate = HGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def x(self, qubit: int) -> 'Circuit':
+    def x(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 Pauli-X 门"""
         from .library.standard_gates import XGate
-        return self._add_gate(XGate(), [qubit])
+        gate = XGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def y(self, qubit: int) -> 'Circuit':
+    def y(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 Pauli-Y 门"""
         from .library.standard_gates import YGate
-        return self._add_gate(YGate(), [qubit])
+        gate = YGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def z(self, qubit: int) -> 'Circuit':
+    def z(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 Pauli-Z 门"""
         from .library.standard_gates import ZGate
-        return self._add_gate(ZGate(), [qubit])
+        gate = ZGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def s(self, qubit: int) -> 'Circuit':
+    def s(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 S 门 (sqrt(Z))"""
         from .library.standard_gates import SGate
-        return self._add_gate(SGate(), [qubit])
+        gate = SGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def t(self, qubit: int) -> 'Circuit':
+    def t(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 T 门 (sqrt(S))"""
         from .library.standard_gates import TGate
-        return self._add_gate(TGate(), [qubit])
+        gate = TGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def rx(self, theta: float, qubit: int) -> 'Circuit':
+    def rx(self, theta: float, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 RX 旋转门"""
         from .library.standard_gates import RXGate
-        return self._add_gate(RXGate(theta), [qubit])
+        gate = RXGate(theta)
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def ry(self, theta: float, qubit: int) -> 'Circuit':
+    def ry(self, theta: float, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 RY 旋转门"""
         from .library.standard_gates import RYGate
-        return self._add_gate(RYGate(theta), [qubit])
+        gate = RYGate(theta)
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def rz(self, theta: float, qubit: int) -> 'Circuit':
+    def rz(self, theta: float, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 RZ 旋转门"""
         from .library.standard_gates import RZGate
-        return self._add_gate(RZGate(theta), [qubit])
+        gate = RZGate(theta)
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def u(self, theta: float, phi: float, lam: float, qubit: int) -> 'Circuit':
+    def u(self, theta: float, phi: float, lam: float, qubit: int, params: Optional[List] = None) -> 'Circuit':
         """添加 U 门（通用单比特门）"""
         from .library.standard_gates import UGate
-        return self._add_gate(UGate(theta, phi, lam), [qubit])
+        gate = UGate(theta, phi, lam)
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit])
     
-    def cx(self, control: int, target: int) -> 'Circuit':
+    def cx(self, control: int, target: int, params: Optional[List] = None) -> 'Circuit':
         """添加 CNOT (CX) 门"""
         from .library.standard_gates import CXGate
-        return self._add_gate(CXGate(), [control, target])
+        gate = CXGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [control, target])
     
-    def cz(self, control: int, target: int) -> 'Circuit':
+    def cz(self, control: int, target: int, params: Optional[List] = None) -> 'Circuit':
         """添加 CZ 门"""
         from .library.standard_gates import CZGate
-        return self._add_gate(CZGate(), [control, target])
+        gate = CZGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [control, target])
     
-    def crz(self, theta: float, control: int, target: int) -> 'Circuit':
+    def crz(self, theta: float, control: int, target: int, params: Optional[List] = None) -> 'Circuit':
         """添加 CRZ 门"""
         from .library.standard_gates import CRZGate
-        return self._add_gate(CRZGate(theta), [control, target])
+        gate = CRZGate(theta)
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [control, target])
     
-    def swap(self, qubit1: int, qubit2: int) -> 'Circuit':
+    def swap(self, qubit1: int, qubit2: int, params: Optional[List] = None) -> 'Circuit':
         """添加 SWAP 门"""
         from .library.standard_gates import SwapGate
-        return self._add_gate(SwapGate(), [qubit1, qubit2])
+        gate = SwapGate()
+        if params:
+            gate.params = params
+        return self._add_gate(gate, [qubit1, qubit2])
     
     def barrier(self, qubits: Optional[List[int]] = None) -> 'Circuit':
         """添加 barrier（用于分隔电路层）"""
@@ -224,6 +309,25 @@ class Circuit:
             qubits = list(range(self._n_qubits))
         from .library.standard_gates import Barrier
         return self._add_gate(Barrier(len(qubits)), qubits)
+    
+    def measure(self, qubit: int, clbit: int) -> 'Circuit':
+        """
+        添加测量操作
+        
+        Args:
+            qubit: 要测量的量子比特
+            clbit: 存储结果的经典比特
+        """
+        from .library.standard_gates import Measure
+        return self.append(Measure(), [qubit], [clbit])
+    
+    def measure_all(self) -> 'Circuit':
+        """测量所有量子比特到对应的经典比特"""
+        if self._n_clbits < self._n_qubits:
+            raise ValueError(f"Not enough classical bits. Need {self._n_qubits}, have {self._n_clbits}")
+        for i in range(self._n_qubits):
+            self.measure(i, i)
+        return self
     
     # ==================== 分层计算 ====================
     
@@ -259,10 +363,70 @@ class Circuit:
     
     def copy(self) -> 'Circuit':
         """创建电路的深拷贝"""
-        new_circuit = Circuit(self._n_qubits, self._name)
+        new_circuit = Circuit(self._n_qubits, self._n_clbits, self._name)
         new_circuit._instructions = [inst.copy() for inst in self._instructions]
+        new_circuit._parameters = self._parameters.copy()
         new_circuit._layers_dirty = True
         return new_circuit
+    
+    def assign_parameters(
+        self, 
+        parameters: Dict[Parameter, float],
+        inplace: bool = False
+    ) -> 'Circuit':
+        """
+        为参数赋值
+        
+        Args:
+            parameters: 参数到值的映射
+            inplace: 是否原地修改
+        
+        Returns:
+            赋值后的电路
+        """
+        if inplace:
+            circuit = self
+        else:
+            circuit = self.copy()
+        
+        new_instructions = []
+        for inst in circuit._instructions:
+            new_params = []
+            for param in inst.operation.params:
+                if isinstance(param, Parameter):
+                    if param in parameters:
+                        new_params.append(parameters[param])
+                    else:
+                        new_params.append(param)
+                elif isinstance(param, ParameterExpression):
+                    bound = param.bind(parameters)
+                    new_params.append(float(bound) if isinstance(bound, (int, float)) or bound.is_real() else bound)
+                else:
+                    new_params.append(param)
+            
+            # 创建新的门和指令
+            new_gate = inst.operation.copy()
+            new_gate.params = new_params
+            new_inst = Instruction(new_gate, inst.qubits.copy(), inst.clbits.copy())
+            new_instructions.append(new_inst)
+        
+        circuit._instructions = new_instructions
+        
+        # 更新参数集合
+        circuit._parameters = set()
+        for inst in circuit._instructions:
+            for param in inst.operation.params:
+                if isinstance(param, Parameter):
+                    circuit._parameters.add(param)
+                elif isinstance(param, ParameterExpression):
+                    circuit._parameters.update(param.parameters)
+        
+        circuit._layers_dirty = True
+        return circuit
+    
+    def is_parameterized(self) -> bool:
+        """检查电路是否包含未绑定的参数"""
+        return len(self._parameters) > 0
     
     def compose(self, other: 'Circuit', qubits: Optional[List[int]] = None) -> 'Circuit':
         """
@@ -307,8 +471,26 @@ class Circuit:
         return [layer.to_list() for layer in self.layers]
     
     def to_instructions(self) -> List[dict]:
-        """转换为指令字典列表"""
+        """转换为指令字典列表 (Janus 格式)"""
         return [inst.to_dict() for inst in self._instructions]
+    
+    def to_dict_list(self) -> List[dict]:
+        """
+        转换为字典列表 (Janus 格式)
+        
+        Returns:
+            [{'name': 'h', 'qubits': [0], 'params': []}, ...]
+        """
+        return self.to_instructions()
+    
+    def to_tuple_list(self) -> List[tuple]:
+        """
+        转换为元组列表 (Qiskit 风格格式)
+        
+        Returns:
+            [('h', [0], []), ('cx', [0, 1], []), ...]
+        """
+        return [(inst.name, inst.qubits, inst.params) for inst in self._instructions]
     
     @classmethod
     def from_layers(cls, layers: List[List[dict]], n_qubits: Optional[int] = None) -> 'Circuit':
