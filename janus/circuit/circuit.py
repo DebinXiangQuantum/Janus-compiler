@@ -1640,6 +1640,78 @@ class Circuit:
                 else:
                     return f"{val:.2f}"
         
+        def _format_param_expr(p) -> str:
+            """格式化参数表达式为简洁形式
+            
+            Args:
+                p: 参数值（可以是数值、Parameter 或 ParameterExpression）
+            
+            Returns:
+                str: 格式化后的字符串，如 "2θ₀" 或 "θ₁"
+            """
+            from .parameter import Parameter, ParameterExpression
+            
+            if isinstance(p, (int, float)):
+                return _pi_check(p, short=False)
+            elif isinstance(p, Parameter):
+                # 直接返回参数名，去掉 LaTeX 格式
+                name = p.name
+                # 移除 LaTeX 格式符号 $\theta_{0}$ -> θ₀
+                name = name.replace('$', '').replace('\\', '')
+                name = name.replace('theta', 'θ')
+                # 处理下标 _{0} -> ₀
+                import re
+                def subscript_replace(m):
+                    subscripts = {'0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
+                                  '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'}
+                    num = m.group(1)
+                    return ''.join(subscripts.get(c, c) for c in num)
+                name = re.sub(r'_\{(\d+)\}', subscript_replace, name)
+                name = re.sub(r'_(\d)', subscript_replace, name)
+                return name
+            elif isinstance(p, ParameterExpression):
+                # 处理参数表达式，如 2*theta
+                coeffs = p._coeffs
+                constant = p._constant
+                
+                if len(coeffs) == 0:
+                    return _pi_check(constant, short=False)
+                elif len(coeffs) == 1:
+                    param, coeff = list(coeffs.items())[0]
+                    param_str = _format_param_expr(param)
+                    
+                    if constant == 0:
+                        if coeff == 1.0:
+                            return param_str
+                        elif coeff == -1.0:
+                            return f"-{param_str}"
+                        elif coeff == int(coeff):
+                            return f"{int(coeff)}{param_str}"
+                        else:
+                            return f"{coeff:.1f}{param_str}"
+                    else:
+                        const_str = _pi_check(constant, short=True)
+                        if coeff == 1.0:
+                            return f"{param_str}+{const_str}"
+                        elif coeff == int(coeff):
+                            return f"{int(coeff)}{param_str}+{const_str}"
+                        else:
+                            return f"{coeff:.1f}{param_str}+{const_str}"
+                else:
+                    # 多参数表达式，简化显示
+                    terms = []
+                    for param, coeff in coeffs.items():
+                        param_str = _format_param_expr(param)
+                        if coeff == 1.0:
+                            terms.append(param_str)
+                        elif coeff == int(coeff):
+                            terms.append(f"{int(coeff)}{param_str}")
+                        else:
+                            terms.append(f"{coeff:.1f}{param_str}")
+                    return "+".join(terms)
+            else:
+                return str(p)
+        
         def _format_gate_label(name: str, params: list) -> str:
             """格式化门标签，包含参数"""
             if not params:
@@ -1647,31 +1719,14 @@ class Circuit:
             
             max_label_len = box_w - 2  # 盒子内可用宽度
             
-            # 第一遍：使用 π 表示（标准格式）
-            param_strs = []
-            for p in params:
-                if isinstance(p, (int, float)):
-                    param_strs.append(_pi_check(p, short=False))
-                else:
-                    param_strs.append(str(p)[:4])
+            # 使用新的参数格式化函数
+            param_strs = [_format_param_expr(p) for p in params]
             
             label = name + "(" + ",".join(param_strs) + ")"
             if len(label) <= max_label_len:
                 return label
             
-            # 第二遍：使用短格式
-            param_strs = []
-            for p in params:
-                if isinstance(p, (int, float)):
-                    param_strs.append(_pi_check(p, short=True))
-                else:
-                    param_strs.append(str(p)[:3])
-            
-            label = name + "(" + ",".join(param_strs) + ")"
-            if len(label) <= max_label_len:
-                return label
-            
-            # 第三遍：截断参数部分，保留括号
+            # 如果太长，尝试截断
             params_str = ",".join(param_strs)
             available = max_label_len - len(name) - 2  # 减去 name 和 "()"
             if available > 0:
@@ -2124,6 +2179,8 @@ class Circuit:
         def format_param_latex(p):
             """格式化参数为 LaTeX 数学符号"""
             import math
+            from .parameter import Parameter, ParameterExpression
+            
             if isinstance(p, (int, float)):
                 pi_mult = p / math.pi
                 # 检查是否为 π 的简单倍数或分数
@@ -2145,25 +2202,106 @@ class Circuit:
                 if abs(p) < 0.01:
                     return r"$0$"
                 return rf"${p:.2f}$"
+            elif isinstance(p, Parameter):
+                # 处理 Parameter 对象
+                name = p.name
+                # 如果已经是 LaTeX 格式（包含 $ 或 \），直接使用
+                if '$' in name or '\\' in name:
+                    # 确保有 $ 包围
+                    if not name.startswith('$'):
+                        name = '$' + name
+                    if not name.endswith('$'):
+                        name = name + '$'
+                    return name
+                else:
+                    # 转换为 LaTeX 格式
+                    return rf"${name}$"
+            elif isinstance(p, ParameterExpression):
+                # 处理 ParameterExpression 对象
+                coeffs = p._coeffs
+                constant = p._constant
+                
+                if len(coeffs) == 0:
+                    return format_param_latex(constant)
+                elif len(coeffs) == 1:
+                    param, coeff = list(coeffs.items())[0]
+                    # 获取参数名（去掉 $ 符号）
+                    param_name = param.name
+                    if param_name.startswith('$') and param_name.endswith('$'):
+                        param_name = param_name[1:-1]
+                    elif param_name.startswith('$'):
+                        param_name = param_name[1:]
+                    elif param_name.endswith('$'):
+                        param_name = param_name[:-1]
+                    
+                    if constant == 0:
+                        if coeff == 1.0:
+                            return rf"${param_name}$"
+                        elif coeff == -1.0:
+                            return rf"$-{param_name}$"
+                        elif coeff == int(coeff):
+                            return rf"${int(coeff)}{param_name}$"
+                        else:
+                            return rf"${coeff:.1f}{param_name}$"
+                    else:
+                        const_str = format_param_latex(constant)
+                        # 去掉 const_str 的 $ 符号
+                        const_str = const_str.strip('$')
+                        if coeff == 1.0:
+                            return rf"${param_name}+{const_str}$"
+                        elif coeff == int(coeff):
+                            return rf"${int(coeff)}{param_name}+{const_str}$"
+                        else:
+                            return rf"${coeff:.1f}{param_name}+{const_str}$"
+                else:
+                    # 多参数表达式
+                    terms = []
+                    for param, coeff in coeffs.items():
+                        param_name = param.name
+                        if param_name.startswith('$') and param_name.endswith('$'):
+                            param_name = param_name[1:-1]
+                        if coeff == 1.0:
+                            terms.append(param_name)
+                        elif coeff == int(coeff):
+                            terms.append(f"{int(coeff)}{param_name}")
+                        else:
+                            terms.append(f"{coeff:.1f}{param_name}")
+                    return rf"${'+'.join(terms)}$"
             return str(p)[:6]
         
-        def format_gate_name_latex(name):
-            """格式化门名称为 LaTeX"""
-            latex_names = {
-                'rx': r'$R_x$', 'ry': r'$R_y$', 'rz': r'$R_z$',
-                'rxx': r'$R_{xx}$', 'ryy': r'$R_{yy}$', 'rzz': r'$R_{zz}$',
-                'crx': r'$R_x$', 'cry': r'$R_y$', 'crz': r'$R_z$',
-                'u1': r'$U_1$', 'u2': r'$U_2$', 'u3': r'$U_3$',
-                'cu1': r'$U_1$', 'cu3': r'$U_3$',
-                'p': r'$P$', 'cp': r'$P$',
-                'h': r'$H$', 'x': r'$X$', 'y': r'$Y$', 'z': r'$Z$',
-                's': r'$S$', 't': r'$T$', 'sdg': r'$S^\dagger$', 'tdg': r'$T^\dagger$',
-                'sx': r'$\sqrt{X}$', 'sxdg': r'$\sqrt{X}^\dagger$',
+        def format_gate_name_latex(name, params=None):
+            """格式化门名称为 LaTeX，包含参数"""
+            # 基础门名称映射
+            base_names = {
+                'rx': 'R_x', 'ry': 'R_y', 'rz': 'R_z',
+                'rxx': 'R_{xx}', 'ryy': 'R_{yy}', 'rzz': 'R_{zz}',
+                'crx': 'R_x', 'cry': 'R_y', 'crz': 'R_z',
+                'u1': 'U_1', 'u2': 'U_2', 'u3': 'U_3',
+                'cu1': 'U_1', 'cu3': 'U_3',
+                'p': 'P', 'cp': 'P',
+                'h': 'H', 'x': 'X', 'y': 'Y', 'z': 'Z',
+                's': 'S', 't': 'T', 'sdg': 'S^\\dagger', 'tdg': 'T^\\dagger',
+                'sx': '\\sqrt{X}', 'sxdg': '\\sqrt{X}^\\dagger',
             }
-            return latex_names.get(name.lower(), name.upper())
+            
+            base = base_names.get(name.lower(), name.upper())
+            
+            if params:
+                # 格式化参数并添加到门名称后
+                param_strs = []
+                for p in params[:2]:  # 最多显示2个参数
+                    ps = format_param_latex(p)
+                    # 去掉外层的 $ 符号
+                    if ps.startswith('$') and ps.endswith('$'):
+                        ps = ps[1:-1]
+                    param_strs.append(ps)
+                param_text = ",".join(param_strs)
+                return rf"${base}({param_text})$"
+            else:
+                return rf"${base}$"
         
         def draw_gate_box(x, y, gate_name, params=None, color=gate_color, is_controlled=False):
-            """绘制门的方框，参数显示在门上方"""
+            """绘制门的方框，参数显示在门名称后面"""
             # 先绘制白色背景遮挡线
             bg_rect = FancyBboxPatch(
                 (x - box_width/2 - 0.02, y - box_height/2 - 0.02),
@@ -2182,20 +2320,12 @@ class Circuit:
             )
             ax.add_patch(rect)
             
-            # 门名称 - 使用 LaTeX 格式
-            label = format_gate_name_latex(gate_name)
-            ax.text(x, y, label, ha='center', va='center', fontsize=12, 
+            # 门名称和参数一起显示 - 使用 LaTeX 格式
+            label = format_gate_name_latex(gate_name, params)
+            # 根据标签长度调整字体大小
+            fontsize = 13 if len(label) > 15 else 14
+            ax.text(x, y, label, ha='center', va='center', fontsize=fontsize, 
                    fontweight='bold', zorder=4)
-            
-            # 参数显示在门的上方，使用 LaTeX 格式
-            if params:
-                param_strs = [format_param_latex(p) for p in params[:3]]
-                param_text = ", ".join(param_strs)
-                # 在门上方显示参数，带白色背景
-                ax.text(x, y - box_height/2 - 0.15, param_text, ha='center', va='top',
-                       fontsize=10, color='#0066CC', zorder=5,
-                       bbox=dict(boxstyle='round,pad=0.1', facecolor='white', 
-                                edgecolor='none', alpha=0.9))
         
         def draw_control(x, y):
             """绘制控制点"""
@@ -2224,7 +2354,7 @@ class Circuit:
         # 先绘制量子比特线（最底层）
         for q in range(self._n_qubits):
             ax.hlines(q, -0.5, n_layers + 0.5, colors='black', linewidth=1, zorder=1)
-            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=11, fontweight='bold')
+            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=13, fontweight='bold')
         
         # 绘制每一层的门
         for layer_idx, layer in enumerate(self.layers):
@@ -2254,7 +2384,7 @@ class Circuit:
                         mid_y = (c + t) / 2
                         param_text = format_param_latex(params[0])
                         ax.text(x + 0.35, mid_y, param_text, ha='left', va='center',
-                               fontsize=10, color='#0066CC', zorder=5,
+                               fontsize=12, color='#0066CC', zorder=5,
                                bbox=dict(boxstyle='round,pad=0.1', facecolor='white', 
                                         edgecolor='none', alpha=0.9))
                 
