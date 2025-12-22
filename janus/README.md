@@ -1,195 +1,128 @@
 # Janus 量子电路框架
 
-轻量级量子电路构建、表示和编译框架，兼容 Qiskit 标准门库。
+轻量级量子电路构建、表示和编译框架。
 
 ## 安装
 
 ```bash
-pip install numpy matplotlib  # matplotlib 用于电路可视化
-
+pip install numpy matplotlib
 ```
 
 ## 快速开始
 
-### 创建电路
-
 ```python
 from janus.circuit import Circuit
 import numpy as np
 
-# 创建 2 量子比特、1 经典比特电路
-qc = Circuit(2, 1, name="Bell")
+# 创建电路并添加门
+qc = Circuit(2)
+qc.h(0)
+qc.cx(0, 1)
+qc.rx(np.pi/2, 0)
 
-# 添加门
-qc.h(0)           # Hadamard 门
-qc.cx(0, 1)       # CNOT 门
-qc.rx(np.pi/2, 0) # RX 旋转门
-qc.measure(0, 0)  # 测量
-
-print(qc)
+# 查看电路
 print(qc.draw())
 ```
 
-## 支持的量子门 (60+)
+## 电路创建
 
-### 单比特 Pauli 门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| I | `IGate` | `qc.id(q)` | 恒等门 |
-| X | `XGate` | `qc.x(q)` | Pauli-X (NOT) |
-| Y | `YGate` | `qc.y(q)` | Pauli-Y |
-| Z | `ZGate` | `qc.z(q)` | Pauli-Z |
-
-### Clifford 门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| H | `HGate` | `qc.h(q)` | Hadamard |
-| S | `SGate` | `qc.s(q)` | √Z |
-| S† | `SdgGate` | `qc.sdg(q)` | S 的共轭转置 |
-| T | `TGate` | `qc.t(q)` | √S |
-| T† | `TdgGate` | `qc.tdg(q)` | T 的共轭转置 |
-| √X | `SXGate` | `qc.sx(q)` | √X |
-| √X† | `SXdgGate` | `qc.sxdg(q)` | √X 的共轭转置 |
-
-### 单比特旋转门
-| 门 | 类名 | 快捷方法 | 参数 |
-|---|------|---------|------|
-| RX | `RXGate` | `qc.rx(θ, q)` | θ: 旋转角度 |
-| RY | `RYGate` | `qc.ry(θ, q)` | θ: 旋转角度 |
-| RZ | `RZGate` | `qc.rz(θ, q)` | θ: 旋转角度 |
-| P | `PhaseGate` | `qc.p(λ, q)` | λ: 相位角度 |
-| U1 | `U1Gate` | `qc.u1(λ, q)` | λ: 相位 |
-| U2 | `U2Gate` | `qc.u2(φ, λ, q)` | φ, λ: 角度 |
-| U3 | `U3Gate` | `qc.u3(θ, φ, λ, q)` | θ, φ, λ: 角度 |
-| U | `UGate` | `qc.u(θ, φ, λ, q)` | 通用单比特门 |
-| R | `RGate` | - | θ, φ: 任意轴旋转 |
-
-### 两比特旋转门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| RXX | `RXXGate` | `qc.rxx(θ, q1, q2)` | XX 旋转 |
-| RYY | `RYYGate` | `qc.ryy(θ, q1, q2)` | YY 旋转 |
-| RZZ | `RZZGate` | `qc.rzz(θ, q1, q2)` | ZZ 旋转 |
-| RZX | `RZXGate` | `qc.rzx(θ, q1, q2)` | ZX 旋转 |
-
-### 两比特门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| CX | `CXGate` | `qc.cx(c, t)` | CNOT |
-| CY | `CYGate` | `qc.cy(c, t)` | 受控 Y |
-| CZ | `CZGate` | `qc.cz(c, t)` | 受控 Z |
-| CH | `CHGate` | `qc.ch(c, t)` | 受控 H |
-| CS | `CSGate` | `qc.cs(c, t)` | 受控 S |
-| CS† | `CSdgGate` | `qc.csdg(c, t)` | 受控 S† |
-| CSX | `CSXGate` | `qc.csx(c, t)` | 受控 √X |
-| DCX | `DCXGate` | `qc.dcx(q1, q2)` | Double CX |
-| ECR | `ECRGate` | `qc.ecr(q1, q2)` | Echoed Cross-Resonance |
-| SWAP | `SwapGate` | `qc.swap(q1, q2)` | 交换门 |
-| iSWAP | `iSwapGate` | `qc.iswap(q1, q2)` | iSWAP |
-
-### 受控旋转门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| CRX | `CRXGate` | `qc.crx(θ, c, t)` | 受控 RX |
-| CRY | `CRYGate` | `qc.cry(θ, c, t)` | 受控 RY |
-| CRZ | `CRZGate` | `qc.crz(θ, c, t)` | 受控 RZ |
-| CP | `CPhaseGate` | `qc.cp(θ, c, t)` | 受控 Phase |
-| CU1 | `CU1Gate` | `qc.cu1(λ, c, t)` | 受控 U1 |
-| CU3 | `CU3Gate` | `qc.cu3(θ, φ, λ, c, t)` | 受控 U3 |
-| CU | `CUGate` | `qc.cu(θ, φ, λ, γ, c, t)` | 受控 U (带全局相位) |
-
-### 三比特及多比特门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| CCX | `CCXGate` | `qc.ccx(c1, c2, t)` | Toffoli |
-| CCZ | `CCZGate` | `qc.ccz(c1, c2, t)` | 双控制 Z |
-| CSWAP | `CSwapGate` | `qc.cswap(c, t1, t2)` | Fredkin |
-| RCCX | `RCCXGate` | `qc.rccx(c1, c2, t)` | 简化 Toffoli |
-| RC3X | `RC3XGate` | `qc.rc3x(c1, c2, c3, t)` | 简化三控制 X |
-| C3X | `C3XGate` | `qc.c3x(c1, c2, c3, t)` | 三控制 X |
-| C4X | `C4XGate` | `qc.c4x(c1, c2, c3, c4, t)` | 四控制 X |
-
-### 多控制门 (新增)
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| C3SX | `C3SXGate` | `qc.c3sx(c1, c2, c3, t)` | 三控制 √X |
-| MCX | `MCXGate` | `qc.mcx(ctrls, t)` | 多控制 X (通用) |
-| MCXGrayCode | `MCXGrayCode` | `qc.mcx_gray(ctrls, t)` | Gray code 实现 |
-| MCXRecursive | `MCXRecursive` | `qc.mcx_recursive(ctrls, t)` | 递归实现 |
-| MCXVChain | `MCXVChain` | `qc.mcx_vchain(ctrls, t)` | V-chain 实现 |
-| MCPhase | `MCPhaseGate` | `qc.mcp(θ, ctrls, t)` | 多控制 Phase |
-| MCU1 | `MCU1Gate` | `qc.mcu1(λ, ctrls, t)` | 多控制 U1 |
-
-### 多控制旋转门 (新增)
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| MCRX | `MCRXGate` | `qc.mcrx(θ, ctrls, t)` | 多控制 RX |
-| MCRY | `MCRYGate` | `qc.mcry(θ, ctrls, t)` | 多控制 RY |
-| MCRZ | `MCRZGate` | `qc.mcrz(θ, ctrls, t)` | 多控制 RZ |
+### 方法 1：从层列表创建
 
 ```python
-from janus.circuit import Circuit
-import numpy as np
-
-qc = Circuit(4)
-
-# 使用快捷方法
-qc.mcx([0, 1], 2)              # 2 控制比特的 MCX
-qc.mcp(np.pi/4, [0, 1], 2)     # 2 控制比特的 MCPhase
-qc.mcrx(np.pi/4, [0, 1], 2)    # 2 控制比特的 MCRX
-qc.mcry(np.pi/3, [0, 1, 2], 3) # 3 控制比特的 MCRY
-qc.mcrz(np.pi/2, [0], 1)       # 1 控制比特的 MCRZ (等价于 CRZ)
-
-# 或直接使用 Gate 类
-from janus.circuit.library import MCRYGate
-mcry = MCRYGate(np.pi/4, num_ctrl_qubits=2)
-qc.append(mcry, [0, 1, 2])
+circuit = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}],
+    [{'name': 'rx', 'qubits': [0], 'params': [1.57]}]
+], n_qubits=2)
 ```
 
-### 链式调用创建受控门
-
-使用 `.gate().control()` 链式调用，可以将任意门转换为受控版本：
+### 方法 2：逐个添加门
 
 ```python
-from janus.circuit import Circuit
-from janus.circuit.library import U3Gate, RXGate, HGate
-import numpy as np
-
-qc = Circuit(4)
-
-# 单控制 RX 门
-qc.gate(RXGate(np.pi/4), 2).control(0)
-
-# 双控制 H 门 (CCH)
-qc.gate(HGate(), 2).control([0, 1])
-
-# 三控制 U3 门
-qc.gate(U3Gate(np.pi/4, np.pi/4, np.pi/4), 3).control([0, 1, 2])
-
-# 不添加控制，直接添加门
-qc.gate(RXGate(np.pi/2), 0).add()
-
-# 也可以直接在 Gate 上调用 .control()
-u3 = U3Gate(np.pi/4, 0, 0)
-cu3 = u3.control(1)      # 单控制
-ccu3 = u3.control(2)     # 双控制
-qc.append(cu3, [0, 1])   # 控制比特 0，目标比特 1
+circuit = Circuit(3)
+circuit.h(0)
+circuit.cx(0, 1)
+circuit.rx(np.pi/4, 2)
 ```
 
-### 特殊门
-| 门 | 类名 | 快捷方法 | 说明 |
-|---|------|---------|------|
-| XX-YY | `XXMinusYYGate` | `qc.xx_minus_yy(θ, β, q1, q2)` | XX-YY 相互作用 |
-| XX+YY | `XXPlusYYGate` | `qc.xx_plus_yy(θ, β, q1, q2)` | XX+YY 相互作用 |
-| GlobalPhase | `GlobalPhaseGate` | `qc.global_phase(φ)` | 全局相位 |
+### 方法 3：指定门所在层
 
-### 特殊操作
-| 操作 | 类名 | 快捷方法 | 说明 |
-|------|------|---------|------|
-| Barrier | `Barrier` | `qc.barrier()` | 屏障 |
-| Measure | `Measure` | `qc.measure(q, c)` | 测量 |
-| Reset | `Reset` | `qc.reset(q)` | 重置 |
-| Delay | `Delay` | `qc.delay(duration, q)` | 延迟 |
+使用 `layer_index` 参数指定门添加到哪一层：
+
+```python
+circuit = Circuit(3)
+circuit.h(0, layer_index=0)
+circuit.x(1, layer_index=0)      # 与 h 门在同一层
+circuit.cx(0, 1, layer_index=1)
+circuit.rx(np.pi/4, 2, layer_index=0)
+```
+
+### 可分离电路
+
+组合多个独立子电路：
+
+```python
+from janus.circuit import Circuit, SeperatableCircuit
+
+c1 = Circuit(2)
+c1.rx(np.pi/4, 0)
+
+c2 = Circuit(3)
+c2.h(2)
+
+sep_circuit = SeperatableCircuit([c1, c2], n_qubits=4)
+```
+
+## 电路属性
+
+```python
+circuit.n_qubits            # 量子比特数
+circuit.depth               # 电路深度（层数）
+circuit.n_gates             # 门总数
+circuit.num_two_qubit_gate  # 两比特门数量
+circuit.duration            # 估算执行时间
+circuit.gates               # 门列表（字典格式）
+circuit.layers              # 分层表示
+circuit.operated_qubits     # 实际被操作的量子比特
+circuit.measured_qubits     # 需要测量的量子比特（可读写）
+```
+
+## 电路操作
+
+### 门移动
+
+```python
+# 获取门可移动的层范围
+available = circuit.get_available_space(gate_index=0)
+print(available)  # range(0, 2)
+
+# 移动门到新层
+new_circuit = circuit.move_gate(gate_index=0, new_layer=1)
+
+# 清理空层
+circuit.clean_empty_layers()
+```
+
+### 复制与组合
+
+```python
+# 复制
+qc_copy = qc.copy()
+
+# 组合电路
+qc1.compose(qc2)
+
+# 电路逆
+qc_inv = qc.inverse()
+```
+
+### 导出格式
+
+```python
+qc.to_dict_list()   # [{'name': 'h', 'qubits': [0], 'params': []}, ...]
+qc.to_tuple_list()  # [('h', [0], []), ...]
+qc.to_layers()      # 分层字典格式
+```
 
 ## 电路可视化
 
@@ -197,73 +130,141 @@ qc.append(cu3, [0, 1])   # 控制比特 0，目标比特 1
 
 ```python
 print(qc.draw())
-
-# 指定每行显示的层数（折叠）
-print(qc.draw(fold=3))  # 每行最多显示 3 层
-
-# 指定每行最大字符数（自动计算层数）
-print(qc.draw(line_length=80))
-
-# 禁用折叠（显示完整电路）
-print(qc.draw(fold=-1))
+print(qc.draw(fold=3))        # 每行最多 3 层
+print(qc.draw(line_length=80)) # 指定行宽
+print(qc.draw(fold=-1))       # 禁用折叠
 ```
 
-输出示例：
-```
-q0: ──H────●────RX(1.57)──
-           │
-q1: ───────X──────────────
-```
-
-当电路较宽时，会自动根据终端宽度折叠成多行显示，使用 `»` 和 `«` 作为分页连续符号：
-```
-      ┌─────────┐                   ┌─────────┐
-q0: ──┤    h    ├─────────●─────────┤rx(0.79) ├──»
-      └─────────┘         │         └─────────┘
-                     ┌────┬────┐    ┌─────────┐
-q1: ─────────────────┤    X    ├────┤ry(1.57) ├──»
-                     └─────────┘    └─────────┘
-
-                      ┌─────────┐
-q0: «───────●─────────┤    h    ├──
-            │         └─────────┘
-       ┌────┬────┐
-q1: «──┤    X    ├─────────────────
-       └────┴────┘
-```
-
-特性：
-- 自动检测终端宽度进行分页
-- 控制点在上方时，目标门顶部显示 `┬` 连接点
-- 控制点在下方时，目标门底部显示 `┴` 连接点
-- 竖线穿过其他门时，正确显示连接点
-- 支持 GBK 编码终端（自动使用 ASCII 字符）
-
-### PNG 图像导出
+### 图像导出
 
 ```python
-# 保存为 PNG 文件
 qc.draw(output='png', filename='circuit.png')
-
-# 自定义大小和分辨率
 qc.draw(output='png', filename='circuit.png', figsize=(12, 6), dpi=200)
 
-# 获取 matplotlib Figure 对象
 fig = qc.draw(output='mpl')
-fig.savefig('circuit.pdf')  # 保存为 PDF
-fig.savefig('circuit.svg')  # 保存为 SVG
+fig.savefig('circuit.pdf')
 ```
 
-### 支持的门绘制符号
-- 单比特门：方框 + 门名称
-- 控制门：● (控制点) + ⊕ (目标)
-- SWAP：× 符号
-- 测量：M 符号
-- 多控制门：多个 ● 连接
+## 支持的量子门 (60+)
 
-## DAG (有向无环图) 表示
+### 单比特门
 
-### 基本 DAG 操作
+| 门 | 方法 | 说明 |
+|---|------|------|
+| I | `qc.id(q)` | 恒等门 |
+| X | `qc.x(q)` | Pauli-X |
+| Y | `qc.y(q)` | Pauli-Y |
+| Z | `qc.z(q)` | Pauli-Z |
+| H | `qc.h(q)` | Hadamard |
+| S | `qc.s(q)` | √Z |
+| S† | `qc.sdg(q)` | S 共轭转置 |
+| T | `qc.t(q)` | √S |
+| T† | `qc.tdg(q)` | T 共轭转置 |
+| √X | `qc.sx(q)` | √X |
+
+### 单比特旋转门
+
+| 门 | 方法 | 参数 |
+|---|------|------|
+| RX | `qc.rx(θ, q)` | θ: 旋转角度 |
+| RY | `qc.ry(θ, q)` | θ: 旋转角度 |
+| RZ | `qc.rz(θ, q)` | θ: 旋转角度 |
+| P | `qc.p(λ, q)` | λ: 相位 |
+| U | `qc.u(θ, φ, λ, q)` | 通用单比特门 |
+| U1 | `qc.u1(λ, q)` | 相位门 |
+| U2 | `qc.u2(φ, λ, q)` | 两参数门 |
+| U3 | `qc.u3(θ, φ, λ, q)` | 三参数门 |
+
+### 两比特门
+
+| 门 | 方法 | 说明 |
+|---|------|------|
+| CX | `qc.cx(c, t)` | CNOT |
+| CY | `qc.cy(c, t)` | 受控 Y |
+| CZ | `qc.cz(c, t)` | 受控 Z |
+| CH | `qc.ch(c, t)` | 受控 H |
+| SWAP | `qc.swap(q1, q2)` | 交换门 |
+| iSWAP | `qc.iswap(q1, q2)` | iSWAP |
+
+### 受控旋转门
+
+| 门 | 方法 | 说明 |
+|---|------|------|
+| CRX | `qc.crx(θ, c, t)` | 受控 RX |
+| CRY | `qc.cry(θ, c, t)` | 受控 RY |
+| CRZ | `qc.crz(θ, c, t)` | 受控 RZ |
+| CP | `qc.cp(θ, c, t)` | 受控 Phase |
+| CU | `qc.cu(θ, φ, λ, γ, c, t)` | 受控 U |
+
+### 两比特旋转门
+
+| 门 | 方法 | 说明 |
+|---|------|------|
+| RXX | `qc.rxx(θ, q1, q2)` | XX 旋转 |
+| RYY | `qc.ryy(θ, q1, q2)` | YY 旋转 |
+| RZZ | `qc.rzz(θ, q1, q2)` | ZZ 旋转 |
+| RZX | `qc.rzx(θ, q1, q2)` | ZX 旋转 |
+
+### 三比特及多比特门
+
+| 门 | 方法 | 说明 |
+|---|------|------|
+| CCX | `qc.ccx(c1, c2, t)` | Toffoli |
+| CCZ | `qc.ccz(c1, c2, t)` | 双控制 Z |
+| CSWAP | `qc.cswap(c, t1, t2)` | Fredkin |
+| C3X | `qc.c3x(c1, c2, c3, t)` | 三控制 X |
+| C4X | `qc.c4x(c1, c2, c3, c4, t)` | 四控制 X |
+
+### 多控制门
+
+```python
+qc.mcx([0, 1], 2)              # 多控制 X
+qc.mcp(np.pi/4, [0, 1], 2)     # 多控制 Phase
+qc.mcrx(np.pi/4, [0, 1], 2)    # 多控制 RX
+qc.mcry(np.pi/3, [0, 1, 2], 3) # 多控制 RY
+qc.mcrz(np.pi/2, [0], 1)       # 多控制 RZ
+```
+
+### 链式调用创建受控门
+
+```python
+from janus.circuit.library import U3Gate, RXGate, HGate
+
+qc.gate(RXGate(np.pi/4), 2).control(0)           # 单控制 RX
+qc.gate(HGate(), 2).control([0, 1])              # 双控制 H
+qc.gate(U3Gate(np.pi/4, 0, 0), 3).control([0, 1, 2])  # 三控制 U3
+```
+
+### 特殊操作
+
+| 操作 | 方法 | 说明 |
+|------|------|------|
+| Barrier | `qc.barrier()` | 屏障 |
+| Measure | `qc.measure(q, c)` | 测量 |
+| Reset | `qc.reset(q)` | 重置 |
+| Delay | `qc.delay(duration, q)` | 延迟 |
+
+## 参数化电路
+
+```python
+from janus.circuit import Circuit, Parameter
+
+theta = Parameter('theta')
+phi = Parameter('phi')
+
+qc = Circuit(2)
+qc.rx(theta, 0)
+qc.ry(phi, 1)
+
+# 检查参数
+print(qc.parameters)          # {Parameter(theta), Parameter(phi)}
+print(qc.is_parameterized())  # True
+
+# 绑定参数
+bound_qc = qc.bind_parameters({theta: np.pi/2, phi: np.pi/4})
+```
+
+## DAG 表示
 
 ```python
 from janus.circuit.dag import circuit_to_dag, dag_to_circuit
@@ -271,208 +272,67 @@ from janus.circuit.dag import circuit_to_dag, dag_to_circuit
 # 电路转 DAG
 dag = circuit_to_dag(qc)
 
-# DAG 属性
-print(dag.depth())       # 电路深度
-print(dag.count_ops())   # 门统计 {'h': 1, 'cx': 1, ...}
-print(dag.layers())      # 分层表示
+print(dag.depth())      # 深度
+print(dag.count_ops())  # 门统计
 
-# 遍历操作节点
+# 遍历节点
 for node in dag.op_nodes():
     print(node.name, node.qubits)
-
-# 拓扑排序遍历
-for node in dag.topological_op_nodes():
-    print(node)
 
 # DAG 转回电路
 qc2 = dag_to_circuit(dag)
 ```
 
-### DAG 高级功能
+### DAGDependency
 
 ```python
-# 祖先和后代查询
-for node in dag.op_nodes():
-    ancestors = dag.ancestors(node)      # 所有祖先节点
-    descendants = dag.descendants(node)  # 所有后代节点
-    break
+from janus.circuit.dag import circuit_to_dag_dependency
 
-# DAG 复制
-dag_copy = dag.copy()
-
-# 最长路径
-path = dag.longest_path()
-
-# 特定类型的操作
-two_qubit_ops = list(dag.two_qubit_ops())
-multi_qubit_ops = list(dag.multi_qubit_ops())
-gate_nodes = list(dag.gate_nodes())  # 排除 measure/reset/barrier
-```
-
-### DAGDependency (交换性分析)
-
-```python
-from janus.circuit.dag import circuit_to_dag_dependency, dag_dependency_to_circuit
-
-# 创建基于依赖关系的 DAG
 dag_dep = circuit_to_dag_dependency(qc)
-
-print(dag_dep.size())   # 节点数
-print(dag_dep.depth())  # 深度
-
-# 查询依赖关系
-for node in dag_dep.get_nodes():
-    succs = dag_dep.direct_successors(node.node_id)
-    preds = dag_dep.direct_predecessors(node.node_id)
-
-# 转回电路
-qc2 = dag_dependency_to_circuit(dag_dep)
+print(dag_dep.size())
+print(dag_dep.depth())
 ```
 
 ### 块操作
 
 ```python
-from janus.circuit.dag import (
-    BlockCollector, BlockSplitter, BlockCollapser, 
-    split_block_into_layers
-)
+from janus.circuit.dag import BlockCollector, split_block_into_layers
 
-# 收集满足条件的块
-dag = circuit_to_dag(qc)
 collector = BlockCollector(dag)
-
-# 收集所有单比特门块
-single_qubit_blocks = collector.collect_all_matching_blocks(
+blocks = collector.collect_all_matching_blocks(
     filter_fn=lambda n: len(n.qubits) == 1,
     min_block_size=2
 )
-
-# 收集所有两比特门块
-two_qubit_blocks = collector.collect_all_matching_blocks(
-    filter_fn=lambda n: len(n.qubits) == 2,
-    split_blocks=True,      # 分割为不相交子块
-    split_layers=False,     # 不分层
-    collect_from_back=False # 从前向后收集
-)
-
-# 将块分割为层
-for block in single_qubit_blocks:
-    layers = split_block_into_layers(block)
-```
-
-## 参数化电路
-
-```python
-from janus.circuit import Circuit, Parameter
-import numpy as np
-
-# 创建参数
-theta = Parameter('theta')
-phi = Parameter('phi')
-
-# 创建参数化电路
-qc = Circuit(2)
-qc.rx(theta, 0)
-qc.ry(phi, 1)
-qc.rz(theta, 0)  # 同一参数可多次使用
-
-# 检查参数
-print(qc.parameters)        # {Parameter(theta), Parameter(phi)}
-print(qc.is_parameterized())  # True
-
-# 绑定参数 (两种方法等价)
-bound_qc = qc.bind_parameters({theta: np.pi/2, phi: np.pi/4})
-# 或
-bound_qc = qc.assign_parameters({theta: np.pi/2, phi: np.pi/4})
-
-print(bound_qc.is_parameterized())  # False
-
-# 部分绑定
-partial_qc = qc.bind_parameters({theta: np.pi/2})
-print(partial_qc.parameters)  # {Parameter(phi)}
-
-# 原地修改
-qc.bind_parameters({theta: np.pi/2}, inplace=True)
-```
-
-## 电路操作
-
-### 基本操作
-
-```python
-# 复制
-qc_copy = qc.copy()
-
-# 组合电路
-qc1 = Circuit(2)
-qc1.h(0)
-qc2 = Circuit(2)
-qc2.cx(0, 1)
-qc1.compose(qc2)  # qc1 现在包含 h + cx
-
-# 电路逆 (不含测量/重置)
-qc_inv = qc.inverse()
-
-# 电路属性
-print(qc.n_qubits)           # 量子比特数
-print(qc.n_clbits)           # 经典比特数
-print(qc.depth)              # 电路深度
-print(qc.num_nonlocal_gates) # 多比特门数量
-```
-
-### 导出格式
-
-```python
-# Janus 字典格式
-qc.to_dict_list()
-# [{'name': 'h', 'qubits': [0], 'params': []}, ...]
-
-# 元组格式 (Qiskit 兼容)
-qc.to_tuple_list()
-# [('h', [0], []), ('cx', [0, 1], []), ...]
-
-# 指令列表转换
-from janus.circuit.converters import to_instruction_list, from_instruction_list
-
-inst_list = to_instruction_list(qc)
-qc2 = from_instruction_list(inst_list, n_qubits=2)
 ```
 
 ## 编译器
-
-### 基础优化
 
 ```python
 from janus.compiler import compile_circuit
 
 qc = Circuit(2)
 qc.h(0)
-qc.h(0)  # 冗余，会被消除
+qc.h(0)  # 冗余
 qc.rz(np.pi/4, 0)
-qc.rz(np.pi/4, 0)  # 会被合并
+qc.rz(np.pi/4, 0)  # 会合并
 
 optimized = compile_circuit(qc, optimization_level=2)
 ```
 
 ### 优化级别
 
-| 级别 | 优化内容 |
-|-----|---------|
+| 级别 | 内容 |
+|-----|------|
 | 0 | 无优化 |
-| 1 | 移除恒等门、消除逆门对 (X-X, H-H 等) |
-| 2 | 级别1 + 合并连续旋转门 (RZ+RZ → RZ) |
+| 1 | 移除恒等门、消除逆门对 |
+| 2 | 级别1 + 合并连续旋转门 |
 
 ### 自定义 Pass
 
 ```python
-from janus.compiler.passes import (
-    CancelInversesPass,
-    MergeRotationsPass,
-    RemoveIdentityPass
-)
+from janus.compiler.passes import CancelInversesPass, MergeRotationsPass
 
 optimized = compile_circuit(qc, passes=[
-    RemoveIdentityPass(),
     CancelInversesPass(),
     MergeRotationsPass(),
 ])
@@ -484,14 +344,9 @@ optimized = compile_circuit(qc, passes=[
 
 ```python
 from janus.encode.schmidt_encode import schmidt_encode
-import numpy as np
 
-# 准备归一化的量子态
 data = [1/np.sqrt(2), 1/np.sqrt(2), 0, 0]
-
-# 编码为量子电路
 circuit = schmidt_encode(q_size=4, data=data, cutoff=1e-4)
-print(f"编码电路: {len(circuit.instructions)} 门")
 ```
 
 ## 模块结构
@@ -499,26 +354,19 @@ print(f"编码电路: {len(circuit.instructions)} 门")
 ```
 janus/
 ├── circuit/
-│   ├── circuit.py      # 核心 Circuit 类
+│   ├── circuit.py      # Circuit、SeperatableCircuit
 │   ├── gate.py         # 门基类
 │   ├── instruction.py  # 指令类
 │   ├── layer.py        # 层表示
-│   ├── dag.py          # DAG 表示 (DAGCircuit, DAGDependency, BlockCollector 等)
-│   ├── converters.py   # 格式转换
-│   ├── parameter.py    # 参数化支持 (Parameter, ParameterExpression)
-│   ├── qubit.py        # 量子比特和寄存器
-│   ├── clbit.py        # 经典比特和寄存器
-│   └── library/        # 标准门库 (60+ 门)
-│       ├── __init__.py
-│       └── standard_gates.py
+│   ├── dag.py          # DAG 表示
+│   ├── parameter.py    # 参数化支持
+│   └── library/        # 标准门库 (60+)
 ├── compiler/
 │   ├── compiler.py     # 编译主函数
 │   └── passes.py       # 优化 Pass
 └── encode/
-    └── schmidt_encode.py  # Schmidt 编码
+    └── schmidt_encode.py
 ```
-
-
 
 ## 许可证
 

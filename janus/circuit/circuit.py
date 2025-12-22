@@ -131,6 +131,122 @@ class Circuit:
         
         # 参数追踪
         self._parameters: Set[Parameter] = set()
+        
+        # 展平的门列表（延迟计算）
+        self._gates_list: Optional[List[dict]] = None
+        self._gates_dirty = True
+        
+        # 测量相关
+        self._measured_qubits: Optional[List[int]] = None
+    
+    # ==================== 从层列表创建电路 ====================
+    
+    @classmethod
+    def from_layers(
+        cls,
+        layers: List[List[dict]],
+        n_qubits: Optional[int] = None,
+        n_clbits: int = 0,
+        name: Optional[str] = None
+    ) -> 'Circuit':
+        """
+        从层列表创建电路
+        
+        Args:
+            layers: 层列表，每层是门字典的列表
+                    格式: [[{'name': 'h', 'qubits': [0], 'params': []}], ...]
+            n_qubits: 量子比特数（可选，自动推断）
+            n_clbits: 经典比特数
+            name: 电路名称
+        
+        Returns:
+            Circuit: 新创建的电路
+        
+        Example:
+            circuit = Circuit.from_layers([
+                [{'name': 'h', 'qubits': [0], 'params': []}],
+                [{'name': 'cx', 'qubits': [0, 1], 'params': []}]
+            ], n_qubits=2)
+        """
+        from .library import get_gate_class
+        
+        # 自动推断量子比特数
+        if n_qubits is None:
+            max_qubit = 0
+            for layer in layers:
+                for gate_dict in layer:
+                    if gate_dict.get('qubits'):
+                        max_qubit = max(max_qubit, max(gate_dict['qubits']))
+            n_qubits = max_qubit + 1
+        
+        circuit = cls(n_qubits, n_clbits, name)
+        
+        for layer in layers:
+            for gate_dict in layer:
+                gate_name = gate_dict['name']
+                qubits = gate_dict['qubits']
+                params = gate_dict.get('params', [])
+                
+                # 获取门类
+                gate_cls = get_gate_class(gate_name)
+                if gate_cls:
+                    if params:
+                        gate = gate_cls(*params)
+                    else:
+                        gate = gate_cls()
+                else:
+                    # 回退到通用 Gate
+                    gate = Gate(gate_name, len(qubits), params)
+                
+                circuit.append(gate, qubits)
+        
+        return circuit
+    
+    @property
+    def gates(self) -> List[dict]:
+        """
+        获取展平的门列表
+        
+        Returns:
+            List[dict]: 门字典列表，每个字典包含 name, qubits, params
+        """
+        if self._gates_dirty or self._gates_list is None:
+            self._gates_list = []
+            for inst in self._instructions:
+                self._gates_list.append({
+                    'name': inst.name,
+                    'qubits': inst.qubits,
+                    'params': inst.params
+                })
+            self._gates_dirty = False
+        return self._gates_list
+    
+    @property
+    def num_two_qubit_gate(self) -> int:
+        """两比特门数量"""
+        return self.num_two_qubit_gates
+    
+    @property
+    def duration(self) -> int:
+        """
+        估算电路执行时间
+        
+        单比特门: 30 时间单位
+        两比特门: 60 时间单位
+        """
+        single_qubit_duration = 30
+        two_qubit_duration = 60
+        
+        total = 0
+        for layer in self.layers:
+            if not layer:
+                continue
+            max_qubits = max((len(inst.qubits) for inst in layer), default=1)
+            if max_qubits == 1:
+                total += single_qubit_duration
+            else:
+                total += two_qubit_duration
+        return total
     
     @property
     def id(self) -> uuid.UUID:
@@ -216,6 +332,175 @@ class Circuit:
             qubits.update(inst.qubits)
         return sorted(list(qubits))
     
+    @property
+    def measured_qubits(self) -> Optional[List[int]]:
+        """获取需要测量的量子比特列表"""
+        return self._measured_qubits
+    
+    @measured_qubits.setter
+    def measured_qubits(self, value: Optional[List[int]]):
+        """设置需要测量的量子比特列表"""
+        self._measured_qubits = value
+    
+    # ==================== 电路操作方法 ====================
+    
+    def get_available_space(self, gate_index: int) -> range:
+        """
+        获取指定门可以移动的层范围
+        
+        Args:
+            gate_index: 门在 gates 列表中的索引
+        
+        Returns:
+            range: 门可以移动到的层索引范围
+        
+        Example:
+            circuit = Circuit(2)
+            circuit.h(0)
+            circuit.cx(0, 1)
+            circuit.x(0)
+            
+            # 获取第一个门可以移动的范围
+            available = circuit.get_available_space(0)
+        """
+        gates = self.gates
+        if gate_index < 0 or gate_index >= len(gates):
+            raise ValueError(f"Gate index {gate_index} out of range")
+        
+        target_gate = gates[gate_index]
+        gate_qubits = target_gate['qubits']
+        
+        # 计算每个门所在的层
+        layers = self.layers
+        gate_layer_map = {}
+        for layer_idx, layer in enumerate(layers):
+            for inst in layer:
+                for i, g in enumerate(gates):
+                    if g['qubits'] == inst.qubits and g['name'] == inst.name:
+                        if i not in gate_layer_map:
+                            gate_layer_map[i] = layer_idx
+        
+        current_layer = gate_layer_map.get(gate_index, 0)
+        
+        # 向前查找
+        former_layer_index = current_layer
+        if current_layer != 0:
+            former_layer_index = current_layer - 1
+            while former_layer_index >= 0:
+                layer = layers[former_layer_index]
+                if layer:
+                    layer_qubits = []
+                    for inst in layer:
+                        layer_qubits.extend(inst.qubits)
+                    if any(q in layer_qubits for q in gate_qubits):
+                        former_layer_index += 1
+                        break
+                former_layer_index -= 1
+            if former_layer_index < 0:
+                former_layer_index = 0
+        
+        # 向后查找
+        next_layer_index = current_layer
+        if current_layer != len(layers) - 1:
+            next_layer_index = current_layer + 1
+            while next_layer_index < len(layers):
+                layer = layers[next_layer_index]
+                if layer:
+                    layer_qubits = []
+                    for inst in layer:
+                        layer_qubits.extend(inst.qubits)
+                    if any(q in layer_qubits for q in gate_qubits):
+                        next_layer_index -= 1
+                        break
+                next_layer_index += 1
+            if next_layer_index >= len(layers):
+                next_layer_index = len(layers) - 1
+        
+        return range(former_layer_index, next_layer_index + 1)
+    
+    def move_gate(self, gate_index: int, new_layer: int) -> 'Circuit':
+        """
+        将门移动到新层
+        
+        Args:
+            gate_index: 门在 gates 列表中的索引
+            new_layer: 目标层索引
+        
+        Returns:
+            Circuit: 新的电路（深拷贝）
+        
+        Example:
+            circuit = Circuit(2)
+            circuit.h(0)
+            circuit.cx(0, 1)
+            
+            # 移动第一个门到第1层
+            new_circuit = circuit.move_gate(0, 1)
+        """
+        gates = self.gates
+        if gate_index < 0 or gate_index >= len(gates):
+            raise ValueError(f"Gate index {gate_index} out of range")
+        
+        # 创建新电路
+        new_circuit = Circuit(self._n_qubits, self._n_clbits, self._name)
+        
+        # 重新构建电路，将指定门放到新层
+        target_gate = gates[gate_index]
+        layers = self.layers
+        
+        # 计算每个门所在的层
+        gate_layer_map = {}
+        for layer_idx, layer in enumerate(layers):
+            for inst in layer:
+                for i, g in enumerate(gates):
+                    if g['qubits'] == inst.qubits and g['name'] == inst.name:
+                        if i not in gate_layer_map:
+                            gate_layer_map[i] = layer_idx
+        
+        # 重新添加门
+        for i, gate in enumerate(gates):
+            if i == gate_index:
+                continue  # 跳过要移动的门
+            
+            from .library import get_gate_class
+            gate_cls = get_gate_class(gate['name'])
+            if gate_cls:
+                if gate['params']:
+                    g = gate_cls(*gate['params'])
+                else:
+                    g = gate_cls()
+            else:
+                g = Gate(gate['name'], len(gate['qubits']), gate['params'])
+            new_circuit.append(g, gate['qubits'])
+        
+        # 添加移动的门到新层
+        from .library import get_gate_class
+        gate_cls = get_gate_class(target_gate['name'])
+        if gate_cls:
+            if target_gate['params']:
+                g = gate_cls(*target_gate['params'])
+            else:
+                g = gate_cls()
+        else:
+            g = Gate(target_gate['name'], len(target_gate['qubits']), target_gate['params'])
+        new_circuit._add_gate_at_layer(g, target_gate['qubits'], new_layer)
+        
+        return new_circuit
+    
+    def clean_empty_layers(self) -> 'Circuit':
+        """
+        清理空层
+        
+        注意：由于 Circuit 使用延迟计算分层，此方法会强制重新计算
+        
+        Returns:
+            Circuit: 返回自身
+        """
+        # 强制重新计算分层
+        self._layers_dirty = True
+        _ = self.layers
+        return self
+    
     # ==================== 添加门的方法 ====================
     
     def append(self, gate: Gate, qubits: List[int], clbits: Optional[List[int]] = None):
@@ -241,11 +526,49 @@ class Circuit:
         instruction = Instruction(gate, qubits, clbits)
         self._instructions.append(instruction)
         self._layers_dirty = True
+        self._gates_dirty = True
         return self
     
     def _add_gate(self, gate: Gate, qubits: List[int]) -> 'Circuit':
         """内部方法：添加门"""
         return self.append(gate, qubits)
+    
+    def _add_gate_at_layer(self, gate: Gate, qubits: List[int], layer_index: int) -> 'Circuit':
+        """
+        内部方法：添加门到指定层
+        
+        注意：这会重新计算分层，将门插入到正确的位置
+        """
+        self._validate_qubits(qubits)
+        
+        # 确保分层已计算
+        _ = self.layers
+        
+        # 计算插入位置：在 layer_index 层的最后一个指令之后
+        insert_pos = 0
+        for i, layer in enumerate(self._layers):
+            if i < layer_index:
+                insert_pos += len(layer)
+            elif i == layer_index:
+                insert_pos += len(layer)
+                break
+        
+        # 如果 layer_index 超出当前层数，直接追加到末尾
+        if layer_index >= len(self._layers):
+            insert_pos = len(self._instructions)
+        
+        # 追踪参数
+        for param in gate.params:
+            if isinstance(param, Parameter):
+                self._parameters.add(param)
+            elif isinstance(param, ParameterExpression):
+                self._parameters.update(param.parameters)
+        
+        instruction = Instruction(gate, qubits)
+        self._instructions.insert(insert_pos, instruction)
+        self._layers_dirty = True
+        self._gates_dirty = True
+        return self
     
     def _validate_qubits(self, qubits: List[int]):
         """验证量子比特索引"""
@@ -261,275 +584,506 @@ class Circuit:
     
     # ==================== 标准门方法 ====================
     
-    def h(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
-        """添加 Hadamard 门，可选参数"""
+    def h(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 Hadamard 门
+        
+        Args:
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import HGate
         gate = HGate()
-        if params:
-            gate.params = params
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
         return self._add_gate(gate, [qubit])
     
-    def x(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
-        """添加 Pauli-X 门，可选参数"""
+    def x(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 Pauli-X 门
+        
+        Args:
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import XGate
         gate = XGate()
-        if params:
-            gate.params = params
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
         return self._add_gate(gate, [qubit])
     
-    def y(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
-        """添加 Pauli-Y 门，可选参数"""
+    def y(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 Pauli-Y 门
+        
+        Args:
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import YGate
         gate = YGate()
-        if params:
-            gate.params = params
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
         return self._add_gate(gate, [qubit])
     
-    def z(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
-        """添加 Pauli-Z 门，可选参数"""
+    def z(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 Pauli-Z 门
+        
+        Args:
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import ZGate
         gate = ZGate()
-        if params:
-            gate.params = params
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
         return self._add_gate(gate, [qubit])
     
-    def s(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
-        """添加 S 门 (sqrt(Z))，可选参数"""
+    def s(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 S 门 (sqrt(Z))
+        
+        Args:
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import SGate
         gate = SGate()
-        if params:
-            gate.params = params
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
         return self._add_gate(gate, [qubit])
     
-    def t(self, qubit: int, params: Optional[List] = None) -> 'Circuit':
-        """添加 T 门 (sqrt(S))，可选参数"""
+    def t(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 T 门 (sqrt(S))
+        
+        Args:
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import TGate
         gate = TGate()
-        if params:
-            gate.params = params
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
         return self._add_gate(gate, [qubit])
     
-    def rx(self, theta: float, qubit: int) -> 'Circuit':
-        """添加 RX 旋转门"""
+    def rx(self, theta: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 RX 旋转门
+        
+        Args:
+            theta: 旋转角度
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import RXGate
-        return self._add_gate(RXGate(theta), [qubit])
+        gate = RXGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def ry(self, theta: float, qubit: int) -> 'Circuit':
-        """添加 RY 旋转门"""
+    def ry(self, theta: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 RY 旋转门
+        
+        Args:
+            theta: 旋转角度
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import RYGate
-        return self._add_gate(RYGate(theta), [qubit])
+        gate = RYGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def rz(self, theta: float, qubit: int) -> 'Circuit':
-        """添加 RZ 旋转门"""
+    def rz(self, theta: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 RZ 旋转门
+        
+        Args:
+            theta: 旋转角度
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import RZGate
-        return self._add_gate(RZGate(theta), [qubit])
+        gate = RZGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def u(self, theta: float, phi: float, lam: float, qubit: int) -> 'Circuit':
-        """添加 U 门（通用单比特门）"""
+    def u(self, theta: float, phi: float, lam: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 U 门（通用单比特门）
+        
+        Args:
+            theta, phi, lam: 旋转角度
+            qubit: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import UGate
-        return self._add_gate(UGate(theta, phi, lam), [qubit])
+        gate = UGate(theta, phi, lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def cx(self, control: int, target: int) -> 'Circuit':
-        """添加 CNOT (CX) 门"""
+    def cx(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 CNOT (CX) 门
+        
+        Args:
+            control: 控制比特索引
+            target: 目标比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import CXGate
-        return self._add_gate(CXGate(), [control, target])
+        gate = CXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cz(self, control: int, target: int) -> 'Circuit':
-        """添加 CZ 门"""
+    def cz(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 CZ 门
+        
+        Args:
+            control: 控制比特索引
+            target: 目标比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import CZGate
-        return self._add_gate(CZGate(), [control, target])
+        gate = CZGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def crz(self, theta: float, control: int, target: int) -> 'Circuit':
-        """添加 CRZ 门"""
+    def crz(self, theta: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 CRZ 门
+        
+        Args:
+            theta: 旋转角度
+            control: 控制比特索引
+            target: 目标比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import CRZGate
-        return self._add_gate(CRZGate(theta), [control, target])
+        gate = CRZGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def swap(self, qubit1: int, qubit2: int) -> 'Circuit':
-        """添加 SWAP 门"""
+    def swap(self, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加 SWAP 门
+        
+        Args:
+            qubit1, qubit2: 量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import SwapGate
-        return self._add_gate(SwapGate(), [qubit1, qubit2])
+        gate = SwapGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
 
-    def cswap(self, control: int, qubit1: int, qubit2: int) -> 'Circuit':
-        """添加受控 SWAP（Fredkin）门"""
+    def cswap(self, control: int, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
+        """
+        添加受控 SWAP（Fredkin）门
+        
+        Args:
+            control: 控制比特索引
+            qubit1, qubit2: 交换的量子比特索引
+            layer_index: 指定层索引（可选）
+        """
         from .library.standard_gates import CSwapGate
-        return self._add_gate(CSwapGate(), [control, qubit1, qubit2])
+        gate = CSwapGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [control, qubit1, qubit2])
     
     # ==================== 扩展门方法 ====================
     
-    def id(self, qubit: int) -> 'Circuit':
+    def id(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 Identity 门"""
         from .library.standard_gates import IGate
-        return self._add_gate(IGate(), [qubit])
+        gate = IGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def sdg(self, qubit: int) -> 'Circuit':
+    def sdg(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 S† 门"""
         from .library.standard_gates import SdgGate
-        return self._add_gate(SdgGate(), [qubit])
+        gate = SdgGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def tdg(self, qubit: int) -> 'Circuit':
+    def tdg(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 T† 门"""
         from .library.standard_gates import TdgGate
-        return self._add_gate(TdgGate(), [qubit])
+        gate = TdgGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def sx(self, qubit: int) -> 'Circuit':
+    def sx(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 sqrt(X) 门"""
         from .library.standard_gates import SXGate
-        return self._add_gate(SXGate(), [qubit])
+        gate = SXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def sxdg(self, qubit: int) -> 'Circuit':
+    def sxdg(self, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 sqrt(X)† 门"""
         from .library.standard_gates import SXdgGate
-        return self._add_gate(SXdgGate(), [qubit])
+        gate = SXdgGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def p(self, lam: float, qubit: int) -> 'Circuit':
+    def p(self, lam: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 Phase 门"""
         from .library.standard_gates import PhaseGate
-        return self._add_gate(PhaseGate(lam), [qubit])
+        gate = PhaseGate(lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def u1(self, lam: float, qubit: int) -> 'Circuit':
+    def u1(self, lam: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 U1 门"""
         from .library.standard_gates import U1Gate
-        return self._add_gate(U1Gate(lam), [qubit])
+        gate = U1Gate(lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def u2(self, phi: float, lam: float, qubit: int) -> 'Circuit':
+    def u2(self, phi: float, lam: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 U2 门"""
         from .library.standard_gates import U2Gate
-        return self._add_gate(U2Gate(phi, lam), [qubit])
+        gate = U2Gate(phi, lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def u3(self, theta: float, phi: float, lam: float, qubit: int) -> 'Circuit':
+    def u3(self, theta: float, phi: float, lam: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 U3 门"""
         from .library.standard_gates import U3Gate
-        return self._add_gate(U3Gate(theta, phi, lam), [qubit])
+        gate = U3Gate(theta, phi, lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def r(self, theta: float, phi: float, qubit: int) -> 'Circuit':
+    def r(self, theta: float, phi: float, qubit: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 R 门"""
         from .library.standard_gates import RGate
-        return self._add_gate(RGate(theta, phi), [qubit])
+        gate = RGate(theta, phi)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit], layer_index)
+        return self._add_gate(gate, [qubit])
     
-    def cy(self, control: int, target: int) -> 'Circuit':
+    def cy(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CY 门"""
         from .library.standard_gates import CYGate
-        return self._add_gate(CYGate(), [control, target])
+        gate = CYGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def ch(self, control: int, target: int) -> 'Circuit':
+    def ch(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CH 门"""
         from .library.standard_gates import CHGate
-        return self._add_gate(CHGate(), [control, target])
+        gate = CHGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cs(self, control: int, target: int) -> 'Circuit':
+    def cs(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CS 门"""
         from .library.standard_gates import CSGate
-        return self._add_gate(CSGate(), [control, target])
+        gate = CSGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def csdg(self, control: int, target: int) -> 'Circuit':
+    def csdg(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CS† 门"""
         from .library.standard_gates import CSdgGate
-        return self._add_gate(CSdgGate(), [control, target])
+        gate = CSdgGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def csx(self, control: int, target: int) -> 'Circuit':
+    def csx(self, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CSX 门"""
         from .library.standard_gates import CSXGate
-        return self._add_gate(CSXGate(), [control, target])
+        gate = CSXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def dcx(self, qubit1: int, qubit2: int) -> 'Circuit':
+    def dcx(self, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 DCX 门"""
         from .library.standard_gates import DCXGate
-        return self._add_gate(DCXGate(), [qubit1, qubit2])
+        gate = DCXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def ecr(self, qubit1: int, qubit2: int) -> 'Circuit':
+    def ecr(self, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 ECR 门"""
         from .library.standard_gates import ECRGate
-        return self._add_gate(ECRGate(), [qubit1, qubit2])
+        gate = ECRGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def iswap(self, qubit1: int, qubit2: int) -> 'Circuit':
+    def iswap(self, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 iSWAP 门"""
         from .library.standard_gates import iSwapGate
-        return self._add_gate(iSwapGate(), [qubit1, qubit2])
+        gate = iSwapGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def crx(self, theta: float, control: int, target: int) -> 'Circuit':
+    def crx(self, theta: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CRX 门"""
         from .library.standard_gates import CRXGate
-        return self._add_gate(CRXGate(theta), [control, target])
+        gate = CRXGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cry(self, theta: float, control: int, target: int) -> 'Circuit':
+    def cry(self, theta: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CRY 门"""
         from .library.standard_gates import CRYGate
-        return self._add_gate(CRYGate(theta), [control, target])
+        gate = CRYGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cp(self, theta: float, control: int, target: int) -> 'Circuit':
+    def cp(self, theta: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CPhase 门"""
         from .library.standard_gates import CPhaseGate
-        return self._add_gate(CPhaseGate(theta), [control, target])
+        gate = CPhaseGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cu1(self, lam: float, control: int, target: int) -> 'Circuit':
+    def cu1(self, lam: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CU1 门"""
         from .library.standard_gates import CU1Gate
-        return self._add_gate(CU1Gate(lam), [control, target])
+        gate = CU1Gate(lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cu3(self, theta: float, phi: float, lam: float, control: int, target: int) -> 'Circuit':
+    def cu3(self, theta: float, phi: float, lam: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CU3 门"""
         from .library.standard_gates import CU3Gate
-        return self._add_gate(CU3Gate(theta, phi, lam), [control, target])
+        gate = CU3Gate(theta, phi, lam)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def cu(self, theta: float, phi: float, lam: float, gamma: float, control: int, target: int) -> 'Circuit':
+    def cu(self, theta: float, phi: float, lam: float, gamma: float, control: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CU 门"""
         from .library.standard_gates import CUGate
-        return self._add_gate(CUGate(theta, phi, lam, gamma), [control, target])
+        gate = CUGate(theta, phi, lam, gamma)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [control, target], layer_index)
+        return self._add_gate(gate, [control, target])
     
-    def rxx(self, theta: float, qubit1: int, qubit2: int) -> 'Circuit':
+    def rxx(self, theta: float, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 RXX 门"""
         from .library.standard_gates import RXXGate
-        return self._add_gate(RXXGate(theta), [qubit1, qubit2])
+        gate = RXXGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def ryy(self, theta: float, qubit1: int, qubit2: int) -> 'Circuit':
+    def ryy(self, theta: float, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 RYY 门"""
         from .library.standard_gates import RYYGate
-        return self._add_gate(RYYGate(theta), [qubit1, qubit2])
+        gate = RYYGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def rzz(self, theta: float, qubit1: int, qubit2: int) -> 'Circuit':
+    def rzz(self, theta: float, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 RZZ 门"""
         from .library.standard_gates import RZZGate
-        return self._add_gate(RZZGate(theta), [qubit1, qubit2])
+        gate = RZZGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def rzx(self, theta: float, qubit1: int, qubit2: int) -> 'Circuit':
+    def rzx(self, theta: float, qubit1: int, qubit2: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 RZX 门"""
         from .library.standard_gates import RZXGate
-        return self._add_gate(RZXGate(theta), [qubit1, qubit2])
+        gate = RZXGate(theta)
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [qubit1, qubit2], layer_index)
+        return self._add_gate(gate, [qubit1, qubit2])
     
-    def ccx(self, ctrl1: int, ctrl2: int, target: int) -> 'Circuit':
+    def ccx(self, ctrl1: int, ctrl2: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CCX (Toffoli) 门"""
         from .library.standard_gates import CCXGate
-        return self._add_gate(CCXGate(), [ctrl1, ctrl2, target])
+        gate = CCXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, target])
     
-    def ccz(self, ctrl1: int, ctrl2: int, target: int) -> 'Circuit':
+    def ccz(self, ctrl1: int, ctrl2: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 CCZ 门"""
         from .library.standard_gates import CCZGate
-        return self._add_gate(CCZGate(), [ctrl1, ctrl2, target])
+        gate = CCZGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, target])
     
-    def c3x(self, ctrl1: int, ctrl2: int, ctrl3: int, target: int) -> 'Circuit':
+    def c3x(self, ctrl1: int, ctrl2: int, ctrl3: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 C3X 门"""
         from .library.standard_gates import C3XGate
-        return self._add_gate(C3XGate(), [ctrl1, ctrl2, ctrl3, target])
+        gate = C3XGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, ctrl3, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, ctrl3, target])
     
-    def c4x(self, ctrl1: int, ctrl2: int, ctrl3: int, ctrl4: int, target: int) -> 'Circuit':
+    def c4x(self, ctrl1: int, ctrl2: int, ctrl3: int, ctrl4: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 C4X 门"""
         from .library.standard_gates import C4XGate
-        return self._add_gate(C4XGate(), [ctrl1, ctrl2, ctrl3, ctrl4, target])
+        gate = C4XGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, ctrl3, ctrl4, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, ctrl3, ctrl4, target])
 
-    def rccx(self, ctrl1: int, ctrl2: int, target: int) -> 'Circuit':
+    def rccx(self, ctrl1: int, ctrl2: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 RCCX (简化 Toffoli) 门"""
         from .library.standard_gates import RCCXGate
-        return self._add_gate(RCCXGate(), [ctrl1, ctrl2, target])
+        gate = RCCXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, target])
 
-    def rc3x(self, ctrl1: int, ctrl2: int, ctrl3: int, target: int) -> 'Circuit':
+    def rc3x(self, ctrl1: int, ctrl2: int, ctrl3: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 RC3X (简化三控制 X) 门"""
         from .library.standard_gates import RC3XGate
-        return self._add_gate(RC3XGate(), [ctrl1, ctrl2, ctrl3, target])
+        gate = RC3XGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, ctrl3, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, ctrl3, target])
 
-    def c3sx(self, ctrl1: int, ctrl2: int, ctrl3: int, target: int) -> 'Circuit':
+    def c3sx(self, ctrl1: int, ctrl2: int, ctrl3: int, target: int, layer_index: Optional[int] = None) -> 'Circuit':
         """添加 C3SX (三控制 √X) 门"""
         from .library.standard_gates import C3SXGate
-        return self._add_gate(C3SXGate(), [ctrl1, ctrl2, ctrl3, target])
+        gate = C3SXGate()
+        if layer_index is not None:
+            return self._add_gate_at_layer(gate, [ctrl1, ctrl2, ctrl3, target], layer_index)
+        return self._add_gate(gate, [ctrl1, ctrl2, ctrl3, target])
 
     # ==================== 特殊两比特门 ====================
 
@@ -781,6 +1335,7 @@ class Circuit:
         new_circuit._instructions = [inst.copy() for inst in self._instructions]
         new_circuit._parameters = self._parameters.copy()
         new_circuit._layers_dirty = True
+        new_circuit._measured_qubits = self._measured_qubits.copy() if self._measured_qubits else None
         return new_circuit
     
     def assign_parameters(
@@ -931,25 +1486,6 @@ class Circuit:
             [('h', [0], []), ('cx', [0, 1], []), ...]
         """
         return [(inst.name, inst.qubits, inst.params) for inst in self._instructions]
-    
-    @classmethod
-    def from_layers(cls, layers: List[List[dict]], n_qubits: Optional[int] = None) -> 'Circuit':
-        """从分层字典格式创建电路"""
-        # 推断量子比特数
-        if n_qubits is None:
-            max_qubit = 0
-            for layer in layers:
-                for gate_dict in layer:
-                    max_qubit = max(max_qubit, max(gate_dict['qubits']))
-            n_qubits = max_qubit + 1
-        
-        circuit = cls(n_qubits)
-        for layer in layers:
-            for gate_dict in layer:
-                gate = Gate.from_dict(gate_dict)
-                circuit.append(gate, gate_dict['qubits'])
-        
-        return circuit
     
     # ==================== 显示方法 ====================
     
@@ -1730,3 +2266,83 @@ class Circuit:
     def __getitem__(self, index: int) -> Layer:
         """获取指定层"""
         return self.layers[index]
+
+
+class SeperatableCircuit:
+    """
+    可分离电路类
+    
+    表示由多个独立的子电路组合而成的电路。
+    这些子电路作用在不同的量子比特集合上，可以并行执行。
+    
+    Example:
+        circuit1 = Circuit(2)
+        circuit1.rx(1.57, 0)
+        
+        circuit2 = Circuit(3)
+        circuit2.h(2)
+        
+        sep_circuit = SeperatableCircuit([circuit1, circuit2], n_qubits=4)
+    """
+    
+    def __init__(self, seperatable_circuits: List['Circuit'], n_qubits: int):
+        """
+        初始化可分离电路
+        
+        Args:
+            seperatable_circuits: 子电路列表
+            n_qubits: 总量子比特数
+        """
+        self.seperatable_circuits = seperatable_circuits
+        self._n_qubits = n_qubits
+        
+        # 合并所有子电路
+        self._circuit = Circuit(n_qubits)
+        
+        # 找到最大深度
+        max_depth = max((c.depth for c in seperatable_circuits), default=0)
+        
+        # 按层合并
+        for layer_idx in range(max_depth):
+            for sub_circuit in seperatable_circuits:
+                if layer_idx < sub_circuit.depth:
+                    for inst in sub_circuit.layers[layer_idx]:
+                        self._circuit.append(inst.operation.copy(), inst.qubits)
+    
+    @property
+    def n_qubits(self) -> int:
+        return self._n_qubits
+    
+    @property
+    def depth(self) -> int:
+        return self._circuit.depth
+    
+    @property
+    def n_gates(self) -> int:
+        return self._circuit.n_gates
+    
+    @property
+    def num_two_qubit_gate(self) -> int:
+        return self._circuit.num_two_qubit_gate
+    
+    @property
+    def gates(self) -> List[dict]:
+        return self._circuit.gates
+    
+    @property
+    def layers(self) -> List[Layer]:
+        return self._circuit.layers
+    
+    @property
+    def duration(self) -> int:
+        return self._circuit.duration
+    
+    def draw(self, output: str = 'text', **kwargs) -> str:
+        """绘制电路"""
+        return self._circuit.draw(output, **kwargs)
+    
+    def __str__(self) -> str:
+        return self._circuit.draw('text')
+    
+    def __repr__(self) -> str:
+        return f"SeperatableCircuit(n_qubits={self._n_qubits}, n_circuits={len(self.seperatable_circuits)})"

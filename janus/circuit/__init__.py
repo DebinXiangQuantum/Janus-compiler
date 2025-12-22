@@ -7,7 +7,7 @@ from .operation import Operation
 from .gate import Gate, ControlledGate
 from .instruction import Instruction
 from .layer import Layer
-from .circuit import Circuit
+from .circuit import Circuit, SeperatableCircuit
 from .qubit import Qubit, QuantumRegister
 from .clbit import Clbit, ClassicalRegister
 from .parameter import Parameter, ParameterExpression
@@ -107,6 +107,7 @@ __all__ = [
     'Instruction',
     'Layer',
     'Circuit',
+    'SeperatableCircuit',
     'Qubit',
     'QuantumRegister',
     'Clbit',
