@@ -2159,8 +2159,8 @@ class Circuit:
         # 计算图像大小 - 增加间距以容纳参数
         n_layers = len(self.layers)
         if figsize is None:
-            width = max(8, n_layers * 1.8 + 3)
-            height = max(4, self._n_qubits * 1.0 + 1.5)
+            width = min(20, n_layers * 1.8 + 3)
+            height = min(20, self._n_qubits * 1.0 + 1.5)
             figsize = (width, height)
         
         fig, ax = plt.subplots(figsize=figsize)
@@ -2323,7 +2323,7 @@ class Circuit:
             # 门名称和参数一起显示 - 使用 LaTeX 格式
             label = format_gate_name_latex(gate_name, params)
             # 根据标签长度调整字体大小
-            fontsize = 13 if len(label) > 15 else 14
+            fontsize = 19 if len(label) > 15 else 19
             ax.text(x, y, label, ha='center', va='center', fontsize=fontsize, 
                    fontweight='bold', zorder=4)
         
@@ -2354,7 +2354,7 @@ class Circuit:
         # 先绘制量子比特线（最底层）
         for q in range(self._n_qubits):
             ax.hlines(q, -0.5, n_layers + 0.5, colors='black', linewidth=1, zorder=1)
-            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=13, fontweight='bold')
+            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=25, fontweight='bold')
         
         # 绘制每一层的门
         for layer_idx, layer in enumerate(self.layers):
