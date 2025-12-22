@@ -2089,7 +2089,7 @@ class Circuit:
         return "\n\n".join(result_parts)
     
     def _draw_mpl(self, figsize: tuple = None):
-        """使用 matplotlib 绘制电路图"""
+        """使用 matplotlib 绘制电路图，支持 LaTeX 数学符号"""
         try:
             import matplotlib.pyplot as plt
             import matplotlib.patches as patches
@@ -2097,75 +2097,134 @@ class Circuit:
         except ImportError:
             raise ImportError("matplotlib is required for PNG output. Install with: pip install matplotlib")
         
-        # 计算图像大小
+        # 启用 LaTeX 渲染（如果可用）
+        plt.rcParams['text.usetex'] = False  # 使用 mathtext 而非完整 LaTeX
+        plt.rcParams['mathtext.fontset'] = 'cm'  # Computer Modern 字体
+        
+        # 计算图像大小 - 增加间距以容纳参数
         n_layers = len(self.layers)
         if figsize is None:
-            width = max(6, n_layers * 1.5 + 2)
-            height = max(3, self._n_qubits * 0.8 + 1)
+            width = max(8, n_layers * 1.8 + 3)
+            height = max(4, self._n_qubits * 1.0 + 1.5)
             figsize = (width, height)
         
         fig, ax = plt.subplots(figsize=figsize)
-        ax.set_xlim(-0.5, n_layers + 0.5)
-        ax.set_ylim(-0.5, self._n_qubits - 0.5)
+        ax.set_xlim(-0.8, n_layers + 0.8)
+        ax.set_ylim(-0.8, self._n_qubits - 0.2)
         ax.set_aspect('equal')
         ax.invert_yaxis()
         ax.axis('off')
         
-        # 绘制量子比特线和标签
-        for q in range(self._n_qubits):
-            ax.hlines(q, -0.3, n_layers + 0.3, colors='black', linewidth=1)
-            ax.text(-0.5, q, f'q{q}', ha='right', va='center', fontsize=10, fontweight='bold')
-        
-        # 门的样式
+        # 门的样式 - 增大尺寸
         gate_color = '#E8F4FD'
         ctrl_color = 'black'
-        box_width = 0.6
-        box_height = 0.5
+        box_width = 0.7
+        box_height = 0.6
         
-        def format_param(p):
-            """格式化参数显示"""
+        def format_param_latex(p):
+            """格式化参数为 LaTeX 数学符号"""
             import math
             if isinstance(p, (int, float)):
                 pi_mult = p / math.pi
-                if abs(pi_mult - round(pi_mult)) < 0.01 and abs(round(pi_mult)) <= 4:
-                    mult = round(pi_mult)
-                    if mult == 0: return "0"
-                    elif mult == 1: return "π"
-                    elif mult == -1: return "-π"
-                    else: return f"{mult}π"
-                else:
-                    return f"{p:.2f}"
-            return str(p)[:4]
+                # 检查是否为 π 的简单倍数或分数
+                for denom in [1, 2, 3, 4, 6, 8]:
+                    mult = pi_mult * denom
+                    if abs(mult - round(mult)) < 0.01 and abs(round(mult)) <= 8:
+                        mult = int(round(mult))
+                        if denom == 1:
+                            if mult == 0: return r"$0$"
+                            elif mult == 1: return r"$\pi$"
+                            elif mult == -1: return r"$-\pi$"
+                            else: return rf"${mult}\pi$"
+                        else:
+                            if mult == 0: return r"$0$"
+                            elif mult == 1: return rf"$\frac{{\pi}}{{{denom}}}$"
+                            elif mult == -1: return rf"$-\frac{{\pi}}{{{denom}}}$"
+                            else: return rf"$\frac{{{mult}\pi}}{{{denom}}}$"
+                # 非特殊值，显示数值
+                if abs(p) < 0.01:
+                    return r"$0$"
+                return rf"${p:.2f}$"
+            return str(p)[:6]
         
-        def draw_gate_box(x, y, label, color=gate_color):
-            """绘制门的方框"""
+        def format_gate_name_latex(name):
+            """格式化门名称为 LaTeX"""
+            latex_names = {
+                'rx': r'$R_x$', 'ry': r'$R_y$', 'rz': r'$R_z$',
+                'rxx': r'$R_{xx}$', 'ryy': r'$R_{yy}$', 'rzz': r'$R_{zz}$',
+                'crx': r'$R_x$', 'cry': r'$R_y$', 'crz': r'$R_z$',
+                'u1': r'$U_1$', 'u2': r'$U_2$', 'u3': r'$U_3$',
+                'cu1': r'$U_1$', 'cu3': r'$U_3$',
+                'p': r'$P$', 'cp': r'$P$',
+                'h': r'$H$', 'x': r'$X$', 'y': r'$Y$', 'z': r'$Z$',
+                's': r'$S$', 't': r'$T$', 'sdg': r'$S^\dagger$', 'tdg': r'$T^\dagger$',
+                'sx': r'$\sqrt{X}$', 'sxdg': r'$\sqrt{X}^\dagger$',
+            }
+            return latex_names.get(name.lower(), name.upper())
+        
+        def draw_gate_box(x, y, gate_name, params=None, color=gate_color, is_controlled=False):
+            """绘制门的方框，参数显示在门上方"""
+            # 先绘制白色背景遮挡线
+            bg_rect = FancyBboxPatch(
+                (x - box_width/2 - 0.02, y - box_height/2 - 0.02),
+                box_width + 0.04, box_height + 0.04,
+                boxstyle="round,pad=0,rounding_size=0.1",
+                facecolor='white', edgecolor='none', zorder=2
+            )
+            ax.add_patch(bg_rect)
+            
+            # 绘制门框
             rect = FancyBboxPatch(
                 (x - box_width/2, y - box_height/2),
                 box_width, box_height,
                 boxstyle="round,pad=0.02,rounding_size=0.1",
-                facecolor=color, edgecolor='black', linewidth=1.5
+                facecolor=color, edgecolor='black', linewidth=1.5, zorder=3
             )
             ax.add_patch(rect)
-            fontsize = 9 if len(label) <= 4 else 7 if len(label) <= 6 else 5
-            ax.text(x, y, label, ha='center', va='center', fontsize=fontsize, fontweight='bold')
+            
+            # 门名称 - 使用 LaTeX 格式
+            label = format_gate_name_latex(gate_name)
+            ax.text(x, y, label, ha='center', va='center', fontsize=12, 
+                   fontweight='bold', zorder=4)
+            
+            # 参数显示在门的上方，使用 LaTeX 格式
+            if params:
+                param_strs = [format_param_latex(p) for p in params[:3]]
+                param_text = ", ".join(param_strs)
+                # 在门上方显示参数，带白色背景
+                ax.text(x, y - box_height/2 - 0.15, param_text, ha='center', va='top',
+                       fontsize=10, color='#0066CC', zorder=5,
+                       bbox=dict(boxstyle='round,pad=0.1', facecolor='white', 
+                                edgecolor='none', alpha=0.9))
         
         def draw_control(x, y):
             """绘制控制点"""
-            circle = Circle((x, y), 0.08, facecolor=ctrl_color, edgecolor=ctrl_color)
+            circle = Circle((x, y), 0.1, facecolor=ctrl_color, edgecolor=ctrl_color, zorder=4)
             ax.add_patch(circle)
         
         def draw_target_x(x, y):
             """绘制 CNOT 目标 (⊕)"""
-            circle = Circle((x, y), 0.2, facecolor='white', edgecolor='black', linewidth=1.5)
+            # 白色背景
+            bg = Circle((x, y), 0.25, facecolor='white', edgecolor='none', zorder=2)
+            ax.add_patch(bg)
+            circle = Circle((x, y), 0.22, facecolor='white', edgecolor='black', linewidth=1.5, zorder=3)
             ax.add_patch(circle)
-            ax.plot([x - 0.2, x + 0.2], [y, y], 'k-', linewidth=1.5)
-            ax.plot([x, x], [y - 0.2, y + 0.2], 'k-', linewidth=1.5)
+            ax.plot([x - 0.22, x + 0.22], [y, y], 'k-', linewidth=1.5, zorder=4)
+            ax.plot([x, x], [y - 0.22, y + 0.22], 'k-', linewidth=1.5, zorder=4)
         
         def draw_swap(x, y):
             """绘制 SWAP 符号 (×)"""
-            size = 0.12
-            ax.plot([x - size, x + size], [y - size, y + size], 'k-', linewidth=2)
-            ax.plot([x - size, x + size], [y + size, y - size], 'k-', linewidth=2)
+            size = 0.15
+            # 白色背景
+            bg = Circle((x, y), size + 0.05, facecolor='white', edgecolor='none', zorder=2)
+            ax.add_patch(bg)
+            ax.plot([x - size, x + size], [y - size, y + size], 'k-', linewidth=2, zorder=3)
+            ax.plot([x - size, x + size], [y + size, y - size], 'k-', linewidth=2, zorder=3)
+        
+        # 先绘制量子比特线（最底层）
+        for q in range(self._n_qubits):
+            ax.hlines(q, -0.5, n_layers + 0.5, colors='black', linewidth=1, zorder=1)
+            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=11, fontweight='bold')
         
         # 绘制每一层的门
         for layer_idx, layer in enumerate(self.layers):
@@ -2179,65 +2238,61 @@ class Circuit:
                 if not qs:
                     continue
                 
-                # 构建标签
-                if params:
-                    param_str = ",".join(format_param(p) for p in params[:2])
-                    label = f"{name}({param_str})"
-                else:
-                    label = name.upper() if len(name) <= 2 else name
-                
                 if name == "cx":
                     c, t = qs[0], qs[1]
-                    ax.vlines(x, min(c, t), max(c, t), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(c, t), max(c, t), colors='black', linewidth=1.5, zorder=1)
                     draw_control(x, c)
                     draw_target_x(x, t)
                 
                 elif name in ("cz", "cp"):
                     c, t = qs[0], qs[1]
-                    ax.vlines(x, min(c, t), max(c, t), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(c, t), max(c, t), colors='black', linewidth=1.5, zorder=1)
                     draw_control(x, c)
                     draw_control(x, t)
+                    if name == "cp" and params:
+                        # 在连接线中间显示参数
+                        mid_y = (c + t) / 2
+                        param_text = format_param_latex(params[0])
+                        ax.text(x + 0.35, mid_y, param_text, ha='left', va='center',
+                               fontsize=10, color='#0066CC', zorder=5,
+                               bbox=dict(boxstyle='round,pad=0.1', facecolor='white', 
+                                        edgecolor='none', alpha=0.9))
                 
                 elif name in ("crz", "crx", "cry", "cu", "cu1", "cu3", "ch", "cy"):
                     c, t = qs[0], qs[1]
-                    ax.vlines(x, min(c, t), max(c, t), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(c, t), max(c, t), colors='black', linewidth=1.5, zorder=1)
                     draw_control(x, c)
-                    base_name = name[1:].upper() if name.startswith('c') else name.upper()
-                    if params:
-                        param_str = ",".join(format_param(p) for p in params[:1])
-                        target_label = f"{base_name}({param_str})"
-                    else:
-                        target_label = base_name
-                    draw_gate_box(x, t, target_label)
+                    base_name = name[1:] if name.startswith('c') else name
+                    draw_gate_box(x, t, base_name, params=params if params else None, is_controlled=True)
                 
                 elif name in ("ccx", "c3x", "c4x"):
                     controls, target = qs[:-1], qs[-1]
-                    ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
                     for c in controls:
                         draw_control(x, c)
                     draw_target_x(x, target)
                 
                 elif name == "ccz":
-                    ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
                     for q in qs:
                         draw_control(x, q)
                 
                 elif name == "swap":
                     a, b = qs[0], qs[1]
-                    ax.vlines(x, min(a, b), max(a, b), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(a, b), max(a, b), colors='black', linewidth=1.5, zorder=1)
                     draw_swap(x, a)
                     draw_swap(x, b)
                 
                 elif name == "cswap":
                     c, a, b = qs[0], qs[1], qs[2]
-                    ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5)
+                    ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
                     draw_control(x, c)
                     draw_swap(x, a)
                     draw_swap(x, b)
                 
                 elif name == "barrier":
                     for q in qs:
-                        ax.axvline(x, color='gray', linestyle='--', linewidth=1, alpha=0.5)
+                        ax.axvline(x, color='gray', linestyle='--', linewidth=1, alpha=0.5, zorder=0)
                 
                 elif name == "measure":
                     q = qs[0]
@@ -2246,11 +2301,11 @@ class Circuit:
                 else:
                     # 单比特门或其他门
                     if len(qs) == 1:
-                        draw_gate_box(x, qs[0], label)
+                        draw_gate_box(x, qs[0], name, params=params if params else None)
                     else:
-                        ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5)
+                        ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
                         for q in qs:
-                            draw_gate_box(x, q, label)
+                            draw_gate_box(x, q, name, params=params if params else None)
         
         plt.tight_layout()
         return fig
