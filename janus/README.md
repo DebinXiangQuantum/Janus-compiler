@@ -416,6 +416,344 @@ python -m janus.circuit.cli draw circuit.json -o output.png  # 保存图片
 python -m janus.circuit.cli test circuit.json
 ```
 
+## 模拟器
+
+Janus 提供完整的量子电路模拟器，支持状态向量模拟、密度矩阵模拟和噪声模拟。
+
+### 快速开始
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator
+
+# 创建电路
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}]
+], n_qubits=2)
+
+# 模拟
+sim = StatevectorSimulator()
+result = sim.run(qc, shots=1000)
+print(result.counts)  # {'00': 503, '11': 497}
+```
+
+### 状态向量模拟
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator, Statevector
+
+# 从层列表创建电路
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}],
+    [{'name': 'rx', 'qubits': [0], 'params': [1.57]}]
+], n_qubits=2)
+
+sim = StatevectorSimulator(seed=42)
+
+# 获取状态向量
+sv = sim.statevector(qc)
+print(sv)                    # 状态向量表示
+print(sv.probabilities())    # 概率分布
+
+# 采样测量
+result = sim.run(qc, shots=1000)
+print(result.counts)         # 测量结果统计
+print(result.counts.most_frequent())  # 最频繁结果
+```
+
+### 期望值计算
+
+```python
+import numpy as np
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator
+
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}]
+], n_qubits=1)
+
+sim = StatevectorSimulator()
+sv = sim.statevector(qc)
+
+# Pauli 算符
+Z = np.array([[1, 0], [0, -1]])
+X = np.array([[0, 1], [1, 0]])
+
+print(sv.expectation_value(Z))  # ⟨Z⟩ ≈ 0
+print(sv.expectation_value(X))  # ⟨X⟩ = 1
+```
+
+### 参数化电路
+
+```python
+from janus.circuit import Circuit, Parameter
+from janus.simulator import StatevectorSimulator
+import numpy as np
+
+theta = Parameter('theta')
+
+qc = Circuit(1)
+qc.ry(theta, 0)
+
+sim = StatevectorSimulator()
+
+# 绑定参数运行
+result = sim.run(qc, shots=100, parameter_binds={'theta': np.pi})
+print(result.counts)  # {'1': 100}
+
+# 参数扫描
+for t in [0, np.pi/2, np.pi]:
+    sv = sim.statevector(qc, parameter_binds={'theta': t})
+    print(f"θ={t:.2f}: P(1)={sv.probabilities()[1]:.3f}")
+```
+
+### 初始状态
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator, Statevector
+
+qc = Circuit.from_layers([
+    [{'name': 'x', 'qubits': [0], 'params': []}]
+], n_qubits=2)
+
+sim = StatevectorSimulator()
+
+# 字符串初始状态
+result = sim.run(qc, shots=100, initial_state='01')
+
+# Statevector 初始状态
+sv_init = Statevector.from_label('+0')
+result = sim.run(qc, shots=100, initial_state=sv_init)
+```
+
+### 部分测量
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator
+
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}, 
+     {'name': 'h', 'qubits': [1], 'params': []},
+     {'name': 'h', 'qubits': [2], 'params': []}]
+], n_qubits=3)
+
+sim = StatevectorSimulator()
+
+# 只测量部分量子比特
+result = sim.run(qc, shots=1000, measure_qubits=[0, 2])
+print(result.counts)  # 2-bit 结果
+```
+
+### 密度矩阵
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import DensityMatrix, Statevector
+
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}]
+], n_qubits=2)
+
+# 从电路创建密度矩阵
+sv = Statevector.from_circuit(qc)
+dm = DensityMatrix.from_statevector(sv)
+
+print(dm.purity())              # 纯度
+print(dm.is_pure())             # 是否纯态
+print(dm.von_neumann_entropy()) # 冯诺依曼熵
+
+# 部分迹
+dm_reduced = dm.partial_trace([0])  # 保留 qubit 0
+print(dm_reduced.purity())
+```
+
+### 噪声模拟
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import (
+    NoisySimulator, 
+    NoiseModel,
+    depolarizing_channel,
+    amplitude_damping_channel,
+    phase_damping_channel
+)
+
+# 创建噪声模型
+noise_model = NoiseModel()
+
+# 添加去极化噪声到所有单比特门
+noise_model.add_all_qubit_quantum_error(
+    depolarizing_channel(0.01), 
+    ['h', 'x', 'rx', 'ry', 'rz']
+)
+
+# 添加去极化噪声到两比特门
+noise_model.add_all_qubit_quantum_error(
+    depolarizing_channel(0.02), 
+    ['cx', 'cz']
+)
+
+# 创建电路
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}]
+], n_qubits=2)
+
+# 噪声模拟
+noisy_sim = NoisySimulator(noise_model, seed=42)
+result = noisy_sim.run(qc, shots=1000)
+print(result.counts)  # 包含噪声导致的错误
+
+# 获取密度矩阵
+dm = noisy_sim.density_matrix(qc)
+print(f"纯度: {dm.purity():.4f}")  # < 1 表示混合态
+```
+
+### 噪声信道
+
+```python
+from janus.simulator import (
+    depolarizing_channel,      # 去极化
+    amplitude_damping_channel, # 振幅阻尼 (T1)
+    phase_damping_channel,     # 相位阻尼 (T2)
+    bit_flip_channel,          # 比特翻转
+    phase_flip_channel,        # 相位翻转
+    reset_channel,             # 重置
+)
+
+# 创建噪声信道
+dep = depolarizing_channel(p=0.01)      # 1% 去极化
+amp = amplitude_damping_channel(gamma=0.05)  # 振幅阻尼
+phase = phase_damping_channel(gamma=0.03)    # 相位阻尼
+```
+
+### Statevector 类方法
+
+```python
+from janus.simulator import Statevector
+import numpy as np
+
+# 创建状态
+sv0 = Statevector.from_int(0, num_qubits=3)  # |000⟩
+sv1 = Statevector.from_label('+-0')          # |+⟩⊗|-⟩⊗|0⟩
+sv2 = Statevector(np.array([1, 0, 0, 1]) / np.sqrt(2))  # 自定义
+
+# 状态操作
+sv.probabilities()           # 概率分布
+sv.probabilities([0])        # 边缘概率
+sv.sample_counts(1000)       # 采样
+sv.expectation_value(op)     # 期望值
+
+# 状态比较
+sv1.inner(sv2)               # 内积
+sv1.equiv(sv2)               # 等价（忽略全局相位）
+
+# 张量积
+sv_tensor = sv1.tensor(sv2)
+
+# 演化
+H = np.array([[1, 1], [1, -1]]) / np.sqrt(2)
+sv.evolve(H, [0])            # 在 qubit 0 上应用 H
+```
+
+### 量子算法示例
+
+#### Grover 搜索
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator
+
+# 2-qubit Grover 搜索 |11⟩
+qc = Circuit.from_layers([
+    # 初始化
+    [{'name': 'h', 'qubits': [0], 'params': []},
+     {'name': 'h', 'qubits': [1], 'params': []}],
+    # Oracle (标记 |11⟩)
+    [{'name': 'cz', 'qubits': [0, 1], 'params': []}],
+    # Diffusion
+    [{'name': 'h', 'qubits': [0], 'params': []},
+     {'name': 'h', 'qubits': [1], 'params': []}],
+    [{'name': 'x', 'qubits': [0], 'params': []},
+     {'name': 'x', 'qubits': [1], 'params': []}],
+    [{'name': 'cz', 'qubits': [0, 1], 'params': []}],
+    [{'name': 'x', 'qubits': [0], 'params': []},
+     {'name': 'x', 'qubits': [1], 'params': []}],
+    [{'name': 'h', 'qubits': [0], 'params': []},
+     {'name': 'h', 'qubits': [1], 'params': []}],
+], n_qubits=2)
+
+sim = StatevectorSimulator()
+result = sim.run(qc, shots=1000)
+print(result.counts)  # {'11': ~1000}
+```
+
+#### Bell 态
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator
+
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}]
+], n_qubits=2)
+
+sim = StatevectorSimulator()
+sv = sim.statevector(qc)
+print(sv)  # 0.707|00⟩ + 0.707|11⟩
+```
+
+#### GHZ 态
+
+```python
+from janus.circuit import Circuit
+from janus.simulator import StatevectorSimulator
+
+qc = Circuit.from_layers([
+    [{'name': 'h', 'qubits': [0], 'params': []}],
+    [{'name': 'cx', 'qubits': [0, 1], 'params': []}],
+    [{'name': 'cx', 'qubits': [1, 2], 'params': []}]
+], n_qubits=3)
+
+sim = StatevectorSimulator()
+result = sim.run(qc, shots=1000)
+print(result.counts)  # {'000': ~500, '111': ~500}
+```
+
+### 模拟器 API 参考
+
+#### StatevectorSimulator
+
+| 方法 | 说明 |
+|------|------|
+| `run(circuit, shots, ...)` | 运行电路并采样 |
+| `statevector(circuit, ...)` | 获取最终状态向量 |
+
+#### run() 参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `circuit` | Circuit | 量子电路 |
+| `shots` | int | 采样次数 |
+| `initial_state` | str/Statevector | 初始状态 |
+| `parameter_binds` | dict | 参数绑定 |
+| `measure_qubits` | list | 测量的量子比特 |
+
+#### NoisySimulator
+
+| 方法 | 说明 |
+|------|------|
+| `run(circuit, shots, ...)` | 噪声模拟并采样 |
+| `density_matrix(circuit, ...)` | 获取密度矩阵 |
+
 ## 许可证
 
 MIT License
