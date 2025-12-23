@@ -1,9 +1,9 @@
-"""
+﻿"""
 Exceptions for the optimize module
 完全独立实现,不依赖qiskit
 """
 
-from compat.exceptions import (
+from janus.compat.exceptions import (
     TranspilerError,
     DAGCircuitError,
     QiskitError,

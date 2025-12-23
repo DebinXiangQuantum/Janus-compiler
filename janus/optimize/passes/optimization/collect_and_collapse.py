@@ -1,10 +1,10 @@
-"""Provides a general transpiler pass for collecting and consolidating blocks of nodes
+﻿"""Provides a general transpiler pass for collecting and consolidating blocks of nodes
 in a circuit."""
 
-from optimize.basepasses import TransformationPass
-from compat.converters import dag_to_dagdependency, dagdependency_to_dag
-from optimize.collect_blocks import BlockCollector, BlockCollapser
-from compat.control_flow_utils import trivial_recurse
+from janus.optimize.basepasses import TransformationPass
+from janus.compat.converters import dag_to_dagdependency, dagdependency_to_dag
+from janus.optimize.collect_blocks import BlockCollector, BlockCollapser
+from janus.compat.control_flow_utils import trivial_recurse
 # STUB: control_flow utils
 
 

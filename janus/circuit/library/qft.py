@@ -1,4 +1,4 @@
-"""
+﻿"""
 Quantum Fourier Transform (QFT) gate
 """
 from ..circuit import Circuit
@@ -26,9 +26,9 @@ class QFT(Gate):
             name: Name of the gate
         """
         super().__init__(name, num_qubits, [])
-        self.num_qubits = num_qubits
+        self._qft_num_qubits = num_qubits
         self.approximation_degree = approximation_degree
-        self.inverse = inverse
+        self._inverse = inverse
         self.insert_barriers = insert_barriers
         self.do_swaps = do_swaps
 
@@ -36,14 +36,14 @@ class QFT(Gate):
         """Define the QFT circuit"""
         from .standard_gates import HGate, CPhaseGate, SwapGate
 
-        circuit = Circuit(self.num_qubits)
+        circuit = Circuit(self._qft_num_qubits)
 
         # Build QFT circuit
-        for j in range(self.num_qubits):
+        for j in range(self._qft_num_qubits):
             circuit.append(HGate(), [j])
 
             # Controlled phase rotations
-            for k in range(j + 1, self.num_qubits):
+            for k in range(j + 1, self._qft_num_qubits):
                 if self.approximation_degree == 0 or (k - j) <= self.approximation_degree:
                     lam = np.pi / (2 ** (k - j))
                     circuit.append(CPhaseGate(lam), [k, j])
@@ -53,11 +53,11 @@ class QFT(Gate):
 
         # Swap qubits
         if self.do_swaps:
-            for i in range(self.num_qubits // 2):
-                circuit.append(SwapGate(), [i, self.num_qubits - i - 1])
+            for i in range(self._qft_num_qubits // 2):
+                circuit.append(SwapGate(), [i, self._qft_num_qubits - i - 1])
 
         # Inverse if requested
-        if self.inverse:
+        if self._inverse:
             circuit = circuit.inverse()
 
         return circuit
@@ -65,12 +65,12 @@ class QFT(Gate):
     def inverse(self):
         """Return inverse QFT gate"""
         return QFT(
-            num_qubits=self.num_qubits,
+            num_qubits=self._qft_num_qubits,
             approximation_degree=self.approximation_degree,
-            inverse=not self.inverse,
+            inverse=not self._inverse,
             insert_barriers=self.insert_barriers,
             do_swaps=self.do_swaps,
-            name="qft_dg" if not self.inverse else "qft"
+            name="qft_dg" if not self._inverse else "qft"
         )
 
     def decompose(self):

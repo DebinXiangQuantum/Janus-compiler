@@ -1,19 +1,19 @@
-"""
+﻿"""
 A generic InverseCancellation pass for any set of gate-inverse pairs.
 """
 from __future__ import annotations
 
 from typing import List, Tuple, Union
 
-from circuit import Gate
-from circuit import DAGCircuit
-from optimize.basepasses import TransformationPass
-from compat.exceptions import TranspilerError
-from compat.control_flow_utils import trivial_recurse
+from janus.circuit import Gate
+from janus.circuit import DAGCircuit
+from janus.optimize.basepasses import TransformationPass
+from janus.compat.exceptions import TranspilerError
+from janus.compat.control_flow_utils import trivial_recurse
 # STUB: control_flow utils
 
 # FIXME: qiskit._accelerate.inverse_cancellation not available
-# from compat.accelerate.inverse_cancellation import (
+# from janus.compat.accelerate.inverse_cancellation import (
 #     inverse_cancellation,
 #     run_inverse_cancellation_standard_gates,
 # )

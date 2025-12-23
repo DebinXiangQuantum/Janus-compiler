@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -26,20 +26,20 @@ from typing import Literal, TYPE_CHECKING
 
 import numpy as np
 
-from circuit import Instruction, QuantumCircuit
-from circuit.barrier import Barrier
-from circuit.delay import Delay
+from janus.circuit import Instruction, QuantumCircuit
+from janus.circuit.barrier import Barrier
+from janus.circuit.delay import Delay
 from qiskit.circuit.library.generalized_gates import PauliGate
 from qiskit.circuit.library.standard_gates import IGate, XGate, YGate, ZGate
-from compat.exceptions import QiskitError
-from compat.mixins import generate_apidocs
-from compat.scalar_op import ScalarOp
+from janus.compat.exceptions import QiskitError
+from janus.compat.mixins import generate_apidocs
+from janus.compat.scalar_op import ScalarOp
 from qiskit.quantum_info.operators.symplectic.base_pauli import BasePauli, _count_y
 
 if TYPE_CHECKING:
     from qiskit.quantum_info.operators.symplectic.clifford import Clifford
     from qiskit.quantum_info.operators.symplectic.pauli_list import PauliList
-    from compat.passmanager.layout import TranspileLayout
+    from janus.compat.passmanager.layout import TranspileLayout
 
 
 class Pauli(BasePauli):
@@ -152,7 +152,7 @@ class Pauli(BasePauli):
        :include-source:
        :nofigs:
 
-        from compat.Pauli import Pauli
+        from janus.compat.Pauli import Pauli
 
         P = Pauli('-iXYZ')
 
@@ -730,7 +730,7 @@ class Pauli(BasePauli):
         Returns:
             A new :class:`~.quantum_info.Pauli` with the provided layout applied
         """
-        from compat.passmanager.layout import TranspileLayout
+        from janus.compat.passmanager.layout import TranspileLayout
 
         if layout is None and num_qubits is None:
             return self.copy()

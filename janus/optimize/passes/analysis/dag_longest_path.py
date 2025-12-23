@@ -1,6 +1,6 @@
-"""Return the longest path in a :class:`.DAGCircuit` as a list of DAGNodes."""
+﻿"""Return the longest path in a :class:`.DAGCircuit` as a list of DAGNodes."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class DAGLongestPathAnalyzer(AnalysisPass):

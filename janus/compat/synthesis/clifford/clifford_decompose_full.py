@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -20,11 +20,11 @@ Circuit synthesis for the Clifford class for all-to-all architecture.
 """
 
 from __future__ import annotations
-from circuit import QuantumCircuit
-from compat.Clifford import Clifford
-from compat.synthesis.clifford.clifford_decompose_ag import synth_clifford_ag
-from compat.synthesis.clifford.clifford_decompose_bm import synth_clifford_bm
-from compat.synthesis.clifford.clifford_decompose_greedy import synth_clifford_greedy
+from janus.circuit import QuantumCircuit
+from janus.compat.Clifford import Clifford
+from janus.compat.synthesis.clifford.clifford_decompose_ag import synth_clifford_ag
+from janus.compat.synthesis.clifford.clifford_decompose_bm import synth_clifford_bm
+from janus.compat.synthesis.clifford.clifford_decompose_greedy import synth_clifford_greedy
 
 
 def synth_clifford_full(clifford: Clifford, method: str | None = None) -> QuantumCircuit:

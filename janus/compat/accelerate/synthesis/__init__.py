@@ -1,4 +1,4 @@
-"""
+﻿"""
 Accelerate synthesis module stubs
 Placeholder for Rust-accelerated synthesis functions
 """

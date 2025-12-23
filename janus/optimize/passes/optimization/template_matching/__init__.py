@@ -1,4 +1,4 @@
-"""Module containing template matching methods."""
+﻿"""Module containing template matching methods."""
 
 from .forward_match import ForwardMatch
 from .backward_match import BackwardMatch, Match, MatchingScenarios, MatchingScenariosList

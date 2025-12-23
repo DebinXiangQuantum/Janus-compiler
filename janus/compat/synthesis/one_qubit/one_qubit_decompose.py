@@ -1,4 +1,4 @@
-"""
+﻿"""
 Simplified one_qubit_decompose stub for Janus
 """
 from __future__ import annotations

@@ -1,11 +1,11 @@
-"""Utility functions for handling linear reversible circuits."""
+﻿"""Utility functions for handling linear reversible circuits."""
 
 import copy
 from typing import Callable
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.exceptions import CircuitError
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.exceptions import QiskitError
+from janus.compat.exceptions import CircuitError
 from . import calc_inverse_matrix, check_invertible_binary_matrix
 
 

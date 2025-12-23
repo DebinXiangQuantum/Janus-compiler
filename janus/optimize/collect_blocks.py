@@ -1,13 +1,13 @@
-"""Various ways to divide a DAG into blocks of nodes, to split blocks of nodes
+﻿"""Various ways to divide a DAG into blocks of nodes, to split blocks of nodes
 into smaller sub-blocks, and to consolidate blocks."""
 from __future__ import annotations
 
 from collections.abc import Iterable, Callable
 
-from circuit import Circuit as QuantumCircuit, CircuitInstruction, ClassicalRegister, Bit
+from janus.circuit import Circuit as QuantumCircuit, CircuitInstruction, ClassicalRegister, Bit
 # FIXME: Remove qiskit import import condition_resources
-from circuit import DAGCircuit
-from compat.dagdependency import DAGDependency
+from janus.circuit import DAGCircuit
+from janus.compat.dagdependency import DAGDependency
 # FIXME: Remove qiskit import import DAGOpNode
 # FIXME: Remove qiskit import import DAGDepNode
 from .exceptions import DAGCircuitError

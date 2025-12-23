@@ -1,6 +1,6 @@
-"""Count the operations on the longest path in a DAGCircuit."""
+﻿"""Count the operations on the longest path in a DAGCircuit."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class LongestPathGateCounter(AnalysisPass):

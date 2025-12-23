@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """Module containing two-qubit circuit synthesis and decomposition."""
 
 # Technology 5: KAK Decomposition

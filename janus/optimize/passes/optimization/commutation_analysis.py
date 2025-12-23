@@ -1,7 +1,7 @@
-"""Analysis pass to find commutation relations between DAG nodes."""
+﻿"""Analysis pass to find commutation relations between DAG nodes."""
 
-from optimize.commutation_library import SessionCommutationChecker as scc
-from optimize.basepasses import AnalysisPass
+from janus.optimize.commutation_library import SessionCommutationChecker as scc
+from janus.optimize.basepasses import AnalysisPass
 # FIXME: from # FIXME: qiskit._accelerate.commutation_analysis import analyze_commutations
 
 def analyze_commutations(dag, commutation_checker):

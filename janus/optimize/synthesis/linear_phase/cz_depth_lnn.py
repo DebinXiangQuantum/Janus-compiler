@@ -1,4 +1,4 @@
-"""
+﻿"""
 Synthesis of an n-qubit circuit containing only CZ gates for
 linear nearest neighbor (LNN) connectivity, using CX and phase (S, Sdg or Z) gates.
 The two-qubit depth of the circuit is bounded by 2*n+2.
@@ -11,10 +11,10 @@ References:
 """
 
 import numpy as np
-from circuit import Circuit as QuantumCircuit
+from janus.circuit import Circuit as QuantumCircuit
 
 # FIXME: qiskit._accelerate.synthesis.linear_phase import not available
-# from compat.accelerate.synthesis.linear_phase import (
+# from janus.compat.accelerate.synthesis.linear_phase import (
 #     synth_cz_depth_line_mr as synth_cz_depth_line_mr_inner,
 # )
 

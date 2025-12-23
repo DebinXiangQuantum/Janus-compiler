@@ -1,4 +1,4 @@
-"""Utility functions for handling binary matrices."""
+﻿"""Utility functions for handling binary matrices."""
 
 # pylint: disable=unused-import
 # Import from qiskit._accelerate.synthesis.linear which has Python implementations

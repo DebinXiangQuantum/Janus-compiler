@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -29,10 +29,10 @@ References:
          `arXiv:quant-ph/0701194 <https://arxiv.org/abs/quant-ph/0701194>`_.
 """
 import numpy as np
-from compat.exceptions import QiskitError
-from circuit import QuantumCircuit
-from compat.synthesis.linear.linear_matrix_utils import check_invertible_binary_matrix
-from compat.accelerate.synthesis.linear import py_synth_cnot_depth_line_kms as fast_kms
+from janus.compat.exceptions import QiskitError
+from janus.circuit import QuantumCircuit
+from janus.compat.synthesis.linear.linear_matrix_utils import check_invertible_binary_matrix
+from janus.compat.accelerate.synthesis.linear import py_synth_cnot_depth_line_kms as fast_kms
 
 
 def synth_cnot_depth_line_kms(mat: np.ndarray[bool]) -> QuantumCircuit:

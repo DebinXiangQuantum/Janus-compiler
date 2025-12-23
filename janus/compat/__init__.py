@@ -1,4 +1,4 @@
-"""
+﻿"""
 Janus Compatibility Layer
 提供与qiskit兼容的接口,完全独立实现
 """

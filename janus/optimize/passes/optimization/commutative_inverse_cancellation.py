@@ -1,11 +1,11 @@
-"""Cancel pairs of inverse gates exploiting commutation relations."""
-from optimize.commutation_library import SessionCommutationChecker as scc
-from compat.exceptions import CircuitError
+﻿"""Cancel pairs of inverse gates exploiting commutation relations."""
+from janus.optimize.commutation_library import SessionCommutationChecker as scc
+from janus.compat.exceptions import CircuitError
 
-from circuit import DAGCircuit, DAGOpNode
-from compat.operator import Operator
+from janus.circuit import DAGCircuit, DAGOpNode
+from janus.compat.operator import Operator
 # FIXME: Remove qiskit import import matrix_equal
-from optimize.basepasses import TransformationPass
+from janus.optimize.basepasses import TransformationPass
 
 
 class CommutativeInverseGateCanceller(TransformationPass):

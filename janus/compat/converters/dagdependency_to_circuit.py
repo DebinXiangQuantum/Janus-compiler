@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -17,10 +17,10 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a dag dependency to a circuit"""
-from circuit import Circuit as QuantumCircuit
+from janus.circuit import Circuit as QuantumCircuit
 # CircuitInstruction might not exist in Janus, create a stub if needed
 try:
-    from circuit import CircuitInstruction
+    from janus.circuit import CircuitInstruction
 except ImportError:
     CircuitInstruction = None
 

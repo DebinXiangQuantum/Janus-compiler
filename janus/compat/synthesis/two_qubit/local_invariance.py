@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -22,8 +22,8 @@ of two-qubit unitary operators.
 """
 from __future__ import annotations
 import numpy as np
-from compat.accelerate.two_qubit_decompose import two_qubit_local_invariants as tqli_rs
-from compat.accelerate.two_qubit_decompose import local_equivalence as le_rs
+from janus.compat.accelerate.two_qubit_decompose import two_qubit_local_invariants as tqli_rs
+from janus.compat.accelerate.two_qubit_decompose import local_equivalence as le_rs
 
 
 def two_qubit_local_invariants(U: np.ndarray) -> np.ndarray:

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Given -CZ-CX- transformation (a layer consisting only CNOT gates
     followed by a layer consisting only CZ gates)
 Return a depth-5n circuit implementation of the -CZ-CX- transformation over LNN.
@@ -17,7 +17,7 @@ References:
 """
 
 import numpy as np
-from circuit import Circuit as QuantumCircuit
+from janus.circuit import Circuit as QuantumCircuit
 # FIXME: from # FIXME: qiskit._accelerate.synthesis.linear_phase import py_synth_cx_cz_depth_line_my
 
 

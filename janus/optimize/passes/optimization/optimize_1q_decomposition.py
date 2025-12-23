@@ -1,11 +1,11 @@
-"""Optimize chains of single-qubit gates using Euler 1q decomposer"""
+﻿"""Optimize chains of single-qubit gates using Euler 1q decomposer"""
 
 import logging
 import math
 
-from optimize.basepasses import TransformationPass
+from janus.optimize.basepasses import TransformationPass
 # STUB: control_flow utils
-from optimize.synthesis.one_qubit import one_qubit_decompose
+from janus.optimize.synthesis.one_qubit import one_qubit_decompose
 # FIXME: # FIXME: Remove qiskit import import euler_one_qubit_decomposer
 # FIXME: # FIXME: Remove qiskit import import optimize_1q_gates_decomposition
 
@@ -33,7 +33,7 @@ class euler_one_qubit_decomposer:
         返回简单的长度作为误差估计
         """
         return len(circuit) if circuit else 0
-from circuit.library import (
+from janus.circuit.library import (
     UGate,
     PhaseGate,
     U3Gate,
@@ -46,10 +46,10 @@ from circuit.library import (
     SXGate,
     XGate,
 )
-from circuit import Qubit
+from janus.circuit import Qubit
 # FIXME: Remove qiskit import import CircuitInstruction
-from circuit import DAGCircuit
-from compat.control_flow_utils import trivial_recurse
+from janus.circuit import DAGCircuit
+from janus.compat.control_flow_utils import trivial_recurse
 
 
 logger = logging.getLogger(__name__)

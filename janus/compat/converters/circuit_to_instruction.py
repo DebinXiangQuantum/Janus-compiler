@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -17,10 +17,10 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a circuit to an instruction."""
-from compat.exceptions import QiskitError
-from circuit.instruction import Instruction
-from circuit import QuantumRegister
-from circuit import ClassicalRegister
+from janus.compat.exceptions import QiskitError
+from janus.circuit.instruction import Instruction
+from janus.circuit import QuantumRegister
+from janus.circuit import ClassicalRegister
 
 
 def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None, label=None):
@@ -54,7 +54,7 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
             :nofigs:
 
             from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
-            from compat.converters import circuit_to_instruction
+            from janus.compat.converters import circuit_to_instruction
 
             q = QuantumRegister(3, 'q')
             c = ClassicalRegister(3, 'c')
@@ -66,7 +66,7 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
             circuit_to_instruction(circ)
     """
     # pylint: disable=cyclic-import
-    from circuit.quantumcircuit import QuantumCircuit
+    from janus.circuit.quantumcircuit import QuantumCircuit
 
     if circuit.num_input_vars:
         # This could be supported by moving the `input` variables to be parameters of the

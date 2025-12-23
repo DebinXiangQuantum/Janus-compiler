@@ -1,4 +1,4 @@
-"""
+﻿"""
 Circuit synthesis for the Clifford class.
 """
 
@@ -6,8 +6,8 @@ Circuit synthesis for the Clifford class.
 # Synthesis based on Bravyi et. al. greedy clifford compiler
 # ---------------------------------------------------------------------
 
-from circuit import Circuit as QuantumCircuit
-from compat.clifford import Clifford
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
 
 # Import from qiskit._accelerate.synthesis.clifford
 from qiskit._accelerate.synthesis.clifford import (

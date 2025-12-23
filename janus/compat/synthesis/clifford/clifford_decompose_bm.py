@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -20,10 +20,10 @@ Circuit synthesis for 2-qubit and 3-qubit Cliffords based on Bravyi & Maslov
 decomposition.
 """
 
-from circuit import QuantumCircuit
-from compat.Clifford import Clifford
+from janus.circuit import QuantumCircuit
+from janus.compat.Clifford import Clifford
 
-from compat.accelerate.synthesis.clifford import (
+from janus.compat.accelerate.synthesis.clifford import (
     synth_clifford_bm as synth_clifford_bm_inner,
 )
 

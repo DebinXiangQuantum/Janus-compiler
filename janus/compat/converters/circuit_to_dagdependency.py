@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -18,7 +18,7 @@ Modified for Janus - removed qiskit dependencies
 
 """Helper function for converting a circuit to a dag dependency"""
 
-from compat.dagdependency import DAGDependency
+from janus.compat.dagdependency import DAGDependency
 
 
 def circuit_to_dagdependency(circuit, create_preds_and_succs=True):

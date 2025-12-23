@@ -1,14 +1,14 @@
-"""
+﻿"""
 Decompose a single-qubit unitary via Euler angles.
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
 
-from compat.accelerate import euler_one_qubit_decomposer
-from circuit import Circuit as QuantumCircuit
-from circuit import Qubit
-from circuit.library import (
+from janus.compat.accelerate import euler_one_qubit_decomposer
+from janus.circuit import Circuit as QuantumCircuit
+from janus.circuit import Qubit
+from janus.circuit.library import (
     UGate,
     PhaseGate,
     U3Gate,
@@ -21,13 +21,13 @@ from circuit.library import (
     SXGate,
     XGate,
 )
-from compat.exceptions import QiskitError
+from janus.compat.exceptions import QiskitError
 # FIXME: Remove qiskit import import is_unitary_matrix
-from circuit import Gate
-from compat.operator import Operator
+from janus.circuit import Gate
+from janus.compat.operator import Operator
 
 if TYPE_CHECKING:
-    from circuit import DAGCircuit
+    from janus.circuit import DAGCircuit
 
 DEFAULT_ATOL = 1e-12
 

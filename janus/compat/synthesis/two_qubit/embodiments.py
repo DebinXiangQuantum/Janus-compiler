@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -26,8 +26,8 @@ TODO: discover these automatically from the gates' algebraic definition
 from __future__ import annotations
 import numpy as np
 
-from circuit import QuantumCircuit, Parameter
-from circuit.library import (
+from janus.circuit import QuantumCircuit, Parameter
+from janus.circuit.library import (
     RXXGate,
     RZZGate,
     RZXGate,

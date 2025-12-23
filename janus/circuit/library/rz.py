@@ -1,4 +1,4 @@
-"""RZ Gate - compatibility module"""
+﻿"""RZ Gate - compatibility module"""
 
 from .standard_gates import RZGate
 

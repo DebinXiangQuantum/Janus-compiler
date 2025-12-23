@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -26,9 +26,9 @@ Circuit synthesis for the Clifford class.
 
 import numpy as np
 
-from circuit import QuantumCircuit
-from compat.Clifford import Clifford
-from compat.clifford_circuits import (
+from janus.circuit import QuantumCircuit
+from janus.compat.Clifford import Clifford
+from janus.compat.clifford_circuits import (
     _append_cx,
     _append_h,
     _append_s,

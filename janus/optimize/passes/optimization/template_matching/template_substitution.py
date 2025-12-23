@@ -1,4 +1,4 @@
-"""
+﻿"""
 Template matching substitution, given a list of maximal matches it substitutes
 them in circuit and creates a new optimized dag version of the circuit.
 """
@@ -6,11 +6,11 @@ import collections
 import copy
 import itertools
 
-from circuit import Parameter, ParameterExpression
-from circuit import DAGCircuit
-from compat.dagdependency import DAGDependency
-from compat.converters.dagdependency_to_dag import dagdependency_to_dag
-from compat import _optionals
+from janus.circuit import Parameter, ParameterExpression
+from janus.circuit import DAGCircuit
+from janus.compat.dagdependency import DAGDependency
+from janus.compat.converters.dagdependency_to_dag import dagdependency_to_dag
+from janus.compat import _optionals
 
 
 class SubstitutionConfig:

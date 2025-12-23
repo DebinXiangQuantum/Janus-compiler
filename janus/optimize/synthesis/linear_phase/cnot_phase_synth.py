@@ -1,4 +1,4 @@
-"""
+﻿"""
 Implementation of the GraySynth algorithm for synthesizing CNOT-Phase
 circuits with efficient CNOT cost, and the Patel-Hayes-Markov algorithm
 for optimal synthesis of linear (CNOT-only) reversible circuits.
@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import copy
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.synthesis.linear import synth_cnot_count_full_pmh as synthesize_cnot_count_pmh
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.exceptions import QiskitError
+from janus.compat.synthesis.linear import synth_cnot_count_full_pmh as synthesize_cnot_count_pmh
 
 
 def synthesize_cnot_phase_aam(

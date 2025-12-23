@@ -1,15 +1,15 @@
-"""Optimize chains of single-qubit u1, u2, u3 gates by combining them into a single gate."""
+﻿"""Optimize chains of single-qubit u1, u2, u3 gates by combining them into a single gate."""
 
 from itertools import groupby
 
 import numpy as np
 
-from compat.exceptions import TranspilerError
-from circuit.library import PhaseGate, UGate, U1Gate, U2Gate, U3Gate
-from circuit import ParameterExpression
-from circuit import Gate
-from optimize.basepasses import TransformationPass
-from compat.quaternion import Quaternion
+from janus.compat.exceptions import TranspilerError
+from janus.circuit.library import PhaseGate, UGate, U1Gate, U2Gate, U3Gate
+from janus.circuit import ParameterExpression
+from janus.circuit import Gate
+from janus.optimize.basepasses import TransformationPass
+from janus.compat.quaternion import Quaternion
 # FIXME: from # FIXME: qiskit._accelerate.optimize_1q_gates import compose_u3_rust
 # Python implementation of compose_u3_rust
 import numpy as np

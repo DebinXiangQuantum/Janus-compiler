@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -18,10 +18,10 @@ Modified for Janus - removed qiskit dependencies
 
 
 """Helper function for converting a circuit to a gate"""
-from circuit.annotated_operation import AnnotatedOperation
-from circuit.gate import Gate
-from circuit import QuantumRegister
-from compat.exceptions import QiskitError
+from janus.circuit.annotated_operation import AnnotatedOperation
+from janus.circuit.gate import Gate
+from janus.circuit import QuantumRegister
+from janus.compat.exceptions import QiskitError
 
 
 def _check_is_gate(op):
@@ -60,7 +60,7 @@ def circuit_to_gate(circuit, parameter_map=None, equivalence_library=None, label
         yield the components comprising the original circuit.
     """
     # pylint: disable=cyclic-import
-    from circuit.quantumcircuit import QuantumCircuit
+    from janus.circuit.quantumcircuit import QuantumCircuit
 
     if circuit.clbits:
         raise QiskitError("Circuit with classical bits cannot be converted to gate.")

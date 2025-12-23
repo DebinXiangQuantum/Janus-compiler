@@ -1,4 +1,4 @@
-"""
+﻿"""
 Linear synthesis accelerate functions (Python stubs)
 TODO: Implement Python versions of these functions
 """

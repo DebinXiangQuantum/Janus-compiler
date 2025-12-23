@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -40,8 +40,8 @@ import logging
 
 import numpy as np
 
-from circuit import QuantumCircuit, Gate
-from circuit.library import (
+from janus.circuit import QuantumCircuit, Gate
+from janus.circuit.library import (
     CXGate,
     U3Gate,
     U2Gate,
@@ -55,9 +55,9 @@ from circuit.library import (
     XGate,
     RGate,
 )
-from compat.exceptions import QiskitError
-from compat.operator import Operator
-from compat.synthesis.one_qubit.one_qubit_decompose import (
+from janus.compat.exceptions import QiskitError
+from janus.compat.operator import Operator
+from janus.compat.synthesis.one_qubit.one_qubit_decompose import (
     DEFAULT_ATOL,
 )
 
@@ -68,10 +68,10 @@ def deprecate_func(**kwargs):
         return func
     return decorator
 
-from compat.accelerate import two_qubit_decompose
+from janus.compat.accelerate import two_qubit_decompose
 
 if TYPE_CHECKING:
-    from compat.dagdagcircuit import DAGCircuit, DAGOpNode
+    from janus.compat.dagdagcircuit import DAGCircuit, DAGOpNode
 
 logger = logging.getLogger(__name__)
 

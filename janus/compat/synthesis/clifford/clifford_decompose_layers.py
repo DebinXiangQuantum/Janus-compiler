@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -24,20 +24,20 @@ from __future__ import annotations
 from collections.abc import Callable
 import numpy as np
 
-from circuit import QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.Clifford import Clifford  # pylint: disable=cyclic-import
-from compat.clifford_circuits import (
+from janus.circuit import QuantumCircuit
+from janus.compat.exceptions import QiskitError
+from janus.compat.Clifford import Clifford  # pylint: disable=cyclic-import
+from janus.compat.clifford_circuits import (
     _append_h,
     _append_s,
     _append_cz,
 )
-from compat.synthesis.linear import (
+from janus.compat.synthesis.linear import (
     synth_cnot_count_full_pmh,
     synth_cnot_depth_line_kms,
 )
-from compat.synthesis.linear_phase import synth_cz_depth_line_mr, synth_cx_cz_depth_line_my
-from compat.synthesis.linear.linear_matrix_utils import (
+from janus.compat.synthesis.linear_phase import synth_cz_depth_line_mr, synth_cx_cz_depth_line_my
+from janus.compat.synthesis.linear.linear_matrix_utils import (
     calc_inverse_matrix,
     compute_rank,
     gauss_elimination,

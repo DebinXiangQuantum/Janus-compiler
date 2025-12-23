@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """
 Janus Optimize Module - Quantum Circuit Optimization and Synthesis
 
@@ -22,9 +22,9 @@ techniques and synthesis algorithms. It implements 10 optimization technologies:
 - Technology 10: Auto-selection (to be implemented)
 
 **Usage:**
-    from optimize import TChinMerger, CliffordMerger
-    from optimize.synthesis import synthesize_clifford_circuit
-    from optimize.passes.analysis import Depth, CountOps
+    from janus.optimize import TChinMerger, CliffordMerger
+    from janus.optimize.synthesis import synthesize_clifford_circuit
+    from janus.optimize.passes.analysis import Depth, CountOps
 
 **Architecture:**
 This module uses a hybrid dependency strategy:

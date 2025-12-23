@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """Module containing linear phase circuit synthesis."""
 
 # Technology 7: CNOT Optimization (Linear phase synthesis)

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Simplified DAGDependency stub for Janus
 This is a minimal implementation to avoid complex dependencies
 Full implementation backed up in dagdependency_full.py.bak

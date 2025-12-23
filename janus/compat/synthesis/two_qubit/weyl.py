@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -23,8 +23,8 @@ Simple circuit constructors for Weyl reflections.
 from __future__ import annotations
 import numpy as np
 
-from circuit.quantumcircuit import QuantumCircuit
-from circuit.library import RXGate, RYGate, RZGate
+from janus.circuit.quantumcircuit import QuantumCircuit
+from janus.circuit.library import RXGate, RYGate, RZGate
 
 
 reflection_options = {

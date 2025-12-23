@@ -1,4 +1,4 @@
-"""
+﻿"""
 Clifford类 - 简化stub实现
 临时用于测试,后续需要完整实现
 """
@@ -36,7 +36,7 @@ class Clifford:
     
     def to_circuit(self):
         """转换为量子电路"""
-        from circuit import Circuit
+        from janus.circuit import Circuit
         qc = Circuit(self.num_qubits)
         return qc
     

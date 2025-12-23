@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -23,10 +23,10 @@ Circuit synthesis for the Clifford class.
 # Synthesis based on Bravyi et. al. greedy clifford compiler
 # ---------------------------------------------------------------------
 
-from circuit import QuantumCircuit
-from compat.Clifford import Clifford
+from janus.circuit import QuantumCircuit
+from janus.compat.Clifford import Clifford
 
-from compat.accelerate.synthesis.clifford import (
+from janus.compat.accelerate.synthesis.clifford import (
     synth_clifford_greedy as synth_clifford_greedy_inner,
 )
 

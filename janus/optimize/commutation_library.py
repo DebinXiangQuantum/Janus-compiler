@@ -1,4 +1,4 @@
-"""Provides a commutation checker that caches the determined commutation results during this session """
+﻿"""Provides a commutation checker that caches the determined commutation results during this session """
 
 # TODO: Implement proper commutation checker
 # For now, provide stubs

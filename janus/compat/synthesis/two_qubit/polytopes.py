@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -28,7 +28,7 @@ from itertools import combinations
 
 import numpy as np
 
-from compat.exceptions import QiskitError
+from janus.compat.exceptions import QiskitError
 
 from .utilities import EPSILON
 

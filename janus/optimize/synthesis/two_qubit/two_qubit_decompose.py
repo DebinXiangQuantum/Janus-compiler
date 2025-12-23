@@ -1,4 +1,4 @@
-"""
+﻿"""
 Expand 2-qubit Unitary operators into an equivalent
 decomposition over SU(2)+fixed 2q basis gate, using the KAK method.
 
@@ -19,8 +19,8 @@ import logging
 
 import numpy as np
 
-from circuit import Circuit as QuantumCircuit, Gate
-from circuit.library import (
+from janus.circuit import Circuit as QuantumCircuit, Gate
+from janus.circuit.library import (
     CXGate,
     U3Gate,
     U2Gate,
@@ -34,9 +34,9 @@ from circuit.library import (
     XGate,
     RGate,
 )
-from compat.exceptions import QiskitError
+from janus.compat.exceptions import QiskitError
 # FIXME: Remove qiskit import import Operator
-from optimize.synthesis.one_qubit.one_qubit_decompose import (
+from janus.optimize.synthesis.one_qubit.one_qubit_decompose import (
     DEFAULT_ATOL,
 )
 
@@ -47,11 +47,11 @@ def deprecate_func(**kwargs):
         return func
     return decorator
 
-# Import from compat.accelerate with alias to avoid name conflict
-from compat.accelerate import two_qubit_decompose as _two_qubit_decompose_accel
+# Import from janus.compat.accelerate with alias to avoid name conflict
+from janus.compat.accelerate import two_qubit_decompose as _two_qubit_decompose_accel
 
 if TYPE_CHECKING:
-    from circuit import DAGCircuit, DAGOpNode
+    from janus.circuit import DAGCircuit, DAGOpNode
 
 logger = logging.getLogger(__name__)
 

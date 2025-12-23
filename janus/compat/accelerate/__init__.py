@@ -1,4 +1,4 @@
-"""
+﻿"""
 Accelerate模块 - Python stub实现
 原qiskit._accelerate是Rust实现,这里用Python重写核心逻辑
 """

@@ -1,8 +1,8 @@
-"""Splits each two-qubit gate in the `dag` into two single-qubit gates, if possible without error."""
+﻿"""Splits each two-qubit gate in the `dag` into two single-qubit gates, if possible without error."""
 
-from optimize.basepasses import TransformationPass
+from janus.optimize.basepasses import TransformationPass
 # FIXME: Remove qiskit import import Layout
-from circuit import DAGCircuit
+from janus.circuit import DAGCircuit
 # FIXME: from # FIXME: qiskit._accelerate.split_2q_unitaries import split_2q_unitaries
 
 

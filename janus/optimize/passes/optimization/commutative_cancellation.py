@@ -1,13 +1,13 @@
-"""Cancel the redundant (self-adjoint) gates through commutation relations."""
-from optimize.basepasses import TransformationPass
-from optimize.commutation_library import StandardGateCommutations
-from compat.control_flow_utils import trivial_recurse
-from compat.commutation_checker import CommutationChecker
-from compat import commutation_cancellation
+﻿"""Cancel the redundant (self-adjoint) gates through commutation relations."""
+from janus.optimize.basepasses import TransformationPass
+from janus.optimize.commutation_library import StandardGateCommutations
+from janus.compat.control_flow_utils import trivial_recurse
+from janus.compat.commutation_checker import CommutationChecker
+from janus.compat import commutation_cancellation
 
-from circuit.library.u1 import U1Gate
-from circuit.library.p import PhaseGate
-from circuit.library.rz import RZGate
+from janus.circuit.library.u1 import U1Gate
+from janus.circuit.library.p import PhaseGate
+from janus.circuit.library.rz import RZGate
 
 _CUTOFF_PRECISION = 1e-5
 

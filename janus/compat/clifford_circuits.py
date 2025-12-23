@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -23,9 +23,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from circuit import Barrier, Delay, Gate
-from circuit.exceptions import CircuitError
-from compat.exceptions import QiskitError
+from janus.circuit import Barrier, Delay, Gate
+from janus.circuit.exceptions import CircuitError
+from janus.compat.exceptions import QiskitError
 
 
 def _append_circuit(clifford, circuit, qargs=None):
@@ -156,7 +156,7 @@ def _append_operation(clifford, operation, qargs=None):
     # cliffords the second method is considerably faster.
 
     # pylint: disable=cyclic-import
-    from compat.Clifford import Clifford
+    from janus.compat.Clifford import Clifford
 
     if isinstance(gate, Clifford):
         composed_clifford = clifford.compose(gate, qargs=qargs, front=False)
@@ -164,7 +164,7 @@ def _append_operation(clifford, operation, qargs=None):
         return clifford
 
     # pylint: disable=cyclic-import
-    from circuit.library import LinearFunction
+    from janus.circuit.library import LinearFunction
 
     if isinstance(gate, LinearFunction):
         gate_as_clifford = Clifford.from_linear_function(gate)
@@ -173,7 +173,7 @@ def _append_operation(clifford, operation, qargs=None):
         return clifford
 
     # pylint: disable=cyclic-import
-    from circuit.library import PermutationGate
+    from janus.circuit.library import PermutationGate
 
     if isinstance(gate, PermutationGate):
         gate_as_clifford = Clifford.from_permutation(gate)
@@ -279,7 +279,7 @@ def _prepend_operation(clifford, operation, qargs=None):
     # cliffords the second method is considerably faster.
 
     # pylint: disable=cyclic-import
-    from compat.Clifford import Clifford
+    from janus.compat.Clifford import Clifford
 
     if isinstance(gate, Clifford):
         composed_clifford = clifford.dot(gate, qargs=qargs, front=False)
@@ -287,7 +287,7 @@ def _prepend_operation(clifford, operation, qargs=None):
         return clifford
 
     # pylint: disable=cyclic-import
-    from circuit.library import LinearFunction
+    from janus.circuit.library import LinearFunction
 
     if isinstance(gate, LinearFunction):
         gate_as_clifford = Clifford.from_linear_function(gate)
@@ -296,7 +296,7 @@ def _prepend_operation(clifford, operation, qargs=None):
         return clifford
 
     # pylint: disable=cyclic-import
-    from circuit.library import PermutationGate
+    from janus.circuit.library import PermutationGate
 
     if isinstance(gate, PermutationGate):
         gate_as_clifford = Clifford.from_permutation(gate)

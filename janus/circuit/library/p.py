@@ -1,4 +1,4 @@
-"""Phase Gate - compatibility module"""
+﻿"""Phase Gate - compatibility module"""
 
 from .standard_gates import PhaseGate
 

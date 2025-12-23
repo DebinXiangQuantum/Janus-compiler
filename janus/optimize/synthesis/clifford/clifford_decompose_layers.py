@@ -1,4 +1,4 @@
-"""
+﻿"""
 Circuit synthesis for the Clifford class into layers.
 """
 # pylint: disable=invalid-name
@@ -7,21 +7,21 @@ from __future__ import annotations
 from collections.abc import Callable
 import numpy as np
 
-from circuit import Circuit as QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.clifford import Clifford  # pylint: disable=cyclic-import
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.exceptions import QiskitError
+from janus.compat.clifford import Clifford  # pylint: disable=cyclic-import
 # FIXME: Remove qiskit import - need helper functions
-# from compat.clifford_circuits import (
+# from janus.compat.clifford_circuits import (
 #     _append_h,
 #     _append_s,
 #     _append_cz,
 # )
-from compat.synthesis.linear import (
+from janus.compat.synthesis.linear import (
     synth_cnot_count_full_pmh,
     synth_cnot_depth_line_kms,
 )
-from compat.synthesis.linear_phase import synth_cz_depth_line_mr, synth_cx_cz_depth_line_my
-from optimize.synthesis.linear.linear_matrix_utils import (
+from janus.compat.synthesis.linear_phase import synth_cz_depth_line_mr, synth_cx_cz_depth_line_my
+from janus.optimize.synthesis.linear.linear_matrix_utils import (
     calc_inverse_matrix,
     compute_rank,
     gauss_elimination,

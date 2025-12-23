@@ -1,9 +1,9 @@
-"""
+﻿"""
 Simplified AnnotatedOperation stub for Janus
 This is a minimal implementation to support circuit converters
 """
 
-from circuit.operation import Operation
+from janus.circuit.operation import Operation
 
 
 class AnnotatedOperation(Operation):

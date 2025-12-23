@@ -1,15 +1,15 @@
-"""Replace each sequence of Clifford gates by a single Clifford gate."""
+﻿"""Replace each sequence of Clifford gates by a single Clifford gate."""
 
 from functools import partial
 
-from compat.exceptions import QiskitError
-from optimize.passes.optimization.collect_and_collapse import (
+from janus.compat.exceptions import QiskitError
+from janus.optimize.passes.optimization.collect_and_collapse import (
     CollectAndCollapse,
     collect_using_filter_function,
     collapse_to_operation,
 )
 
-from compat.clifford import Clifford
+from janus.compat.clifford import Clifford
 
 # TODO: Import or define _BASIS_1Q, _BASIS_2Q from qiskit
 # Temporary stub definitions for Clifford basis gates

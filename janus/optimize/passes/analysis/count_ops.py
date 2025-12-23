@@ -1,6 +1,6 @@
-"""Count the operations in a DAG circuit."""
+﻿"""Count the operations in a DAG circuit."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class GateCountAnalyzer(AnalysisPass):

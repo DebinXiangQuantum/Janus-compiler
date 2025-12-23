@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -17,7 +17,7 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a dag circuit to a dag dependency"""
-from compat.dagdependency import DAGDependency as _DAGDependencyV2  # Simplified
+from janus.compat.dagdependency import DAGDependency as _DAGDependencyV2  # Simplified
 
 
 def _dag_to_dagdependency_v2(dag):

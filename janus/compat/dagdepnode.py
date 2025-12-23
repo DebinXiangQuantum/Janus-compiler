@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -21,7 +21,7 @@ Modified for Janus - removed qiskit dependencies
 """Object to represent the information at a node in the DAGCircuit."""
 from __future__ import annotations
 
-from compat.exceptions import QiskitError
+from janus.compat.exceptions import QiskitError
 
 
 class DAGDepNode:

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Template matching in the forward direction, it takes an initial
 match, a configuration of qubit and both circuit and template as inputs. The
 result is a list of match between the template and the circuit.
@@ -12,7 +12,7 @@ Exact and practical pattern matching for quantum circuit optimization.
 
 """
 
-from circuit import Gate as ControlledGate  # Simplified
+from janus.circuit import Gate as ControlledGate  # Simplified
 
 
 class ForwardMatch:

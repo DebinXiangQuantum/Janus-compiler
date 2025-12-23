@@ -1,4 +1,4 @@
-"""
+﻿"""
 Given a template and a circuit: it applies template matching and substitutes
 all compatible maximal matches that reduces the size of the circuit.
 
@@ -10,18 +10,18 @@ Exact and practical pattern matching for quantum circuit optimization.
 """
 import numpy as np
 
-from circuit import Circuit as QuantumCircuit
+from janus.circuit import Circuit as QuantumCircuit
 # FIXME: Remove qiskit import import DAGDependency
-from compat.dagdependency import DAGDependency
-from compat.converters.circuit_to_dagdependency import circuit_to_dagdependency
-from compat.converters.dagdependency_to_circuit import dagdependency_to_circuit
-from compat.converters.dag_to_dagdependency import dag_to_dagdependency
-from compat.converters.dagdependency_to_dag import dagdependency_to_dag
-from optimize.basepasses import TransformationPass
+from janus.compat.dagdependency import DAGDependency
+from janus.compat.converters.circuit_to_dagdependency import circuit_to_dagdependency
+from janus.compat.converters.dagdependency_to_circuit import dagdependency_to_circuit
+from janus.compat.converters.dag_to_dagdependency import dag_to_dagdependency
+from janus.compat.converters.dagdependency_to_dag import dagdependency_to_dag
+from janus.optimize.basepasses import TransformationPass
 # FIXME: Remove qiskit import import template_nct_2a_1, template_nct_2a_2, template_nct_2a_3
-from compat.operator import Operator
-from compat.exceptions import TranspilerError
-from optimize.passes.optimization.template_matching import (
+from janus.compat.operator import Operator
+from janus.compat.exceptions import TranspilerError
+from janus.optimize.passes.optimization.template_matching import (
     TemplateMatching,
     TemplateSubstitution,
     MaximalMatches,

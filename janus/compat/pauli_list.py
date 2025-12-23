@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -27,10 +27,10 @@ from typing import Literal
 import numpy as np
 import rustworkx as rx
 
-from circuit.quantumcircuit import QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.custom_iterator import CustomIterator
-from compat.mixins import GroupMixin, LinearMixin
+from janus.circuit.quantumcircuit import QuantumCircuit
+from janus.compat.exceptions import QiskitError
+from janus.compat.custom_iterator import CustomIterator
+from janus.compat.mixins import GroupMixin, LinearMixin
 from qiskit.quantum_info.operators.symplectic.base_pauli import BasePauli
 from qiskit.quantum_info.operators.symplectic.clifford import Clifford
 from qiskit.quantum_info.operators.symplectic.pauli import Pauli
@@ -67,7 +67,7 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
 
         import numpy as np
 
-        from compat.Pauli import Pauli, PauliList
+        from janus.compat.Pauli import Pauli, PauliList
 
         # 1. init from list[str]
         pauli_list = PauliList(["II", "+ZI", "-iYY"])
@@ -559,7 +559,7 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
            :nofigs:
 
             from numpy.random import shuffle
-            from compat.PauliList import PauliList
+            from janus.compat.PauliList import PauliList
 
             # 2-qubit labels
             labels = ['II', 'IX', 'IY', 'IZ', 'XI', 'XX', 'XY', 'XZ',
@@ -611,7 +611,7 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
            :include-source:
            :nofigs:
 
-            from compat.PauliList import PauliList
+            from janus.compat.PauliList import PauliList
 
             pt = PauliList(['X', 'Y', '-X', 'I', 'I', 'Z', 'X', 'iZ'])
             unique = pt.unique()
@@ -953,7 +953,7 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
         Raises:
             QiskitError: if the Clifford number of qubits and qargs don't match.
         """
-        from circuit import Instruction
+        from janus.circuit import Instruction
 
         if qargs is None:
             qargs = getattr(other, "qargs", None)
@@ -1234,7 +1234,7 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
                    :include-source:
                    :nofigs:
 
-                    >>> from compat.PauliList import PauliList
+                    >>> from janus.compat.PauliList import PauliList
                     >>> op = PauliList(["XX", "YY", "IZ", "ZZ"])
                     >>> op.group_commuting()
                     [PauliList(['XX', 'YY']), PauliList(['IZ', 'ZZ'])]

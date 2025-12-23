@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -36,9 +36,9 @@ from operator import itemgetter
 
 import numpy as np
 
-from circuit.quantumcircuit import QuantumCircuit
-from circuit.library import RXXGate, RYYGate, RZGate
-from compat.exceptions import QiskitError
+from janus.circuit.quantumcircuit import QuantumCircuit
+from janus.circuit.library import RXXGate, RYYGate, RZGate
+from janus.compat.exceptions import QiskitError
 
 from .paths import decomposition_hop
 from .utilities import EPSILON, safe_arccos

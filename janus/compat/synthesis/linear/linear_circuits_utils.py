@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -21,9 +21,9 @@ Modified for Janus - removed qiskit dependencies
 import copy
 from typing import Callable
 import numpy as np
-from circuit import QuantumCircuit
-from compat.exceptions import QiskitError
-from circuit.exceptions import CircuitError
+from janus.circuit import QuantumCircuit
+from janus.compat.exceptions import QiskitError
+from janus.circuit.exceptions import CircuitError
 from . import calc_inverse_matrix, check_invertible_binary_matrix
 
 

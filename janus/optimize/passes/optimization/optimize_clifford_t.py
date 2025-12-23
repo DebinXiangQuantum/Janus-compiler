@@ -1,8 +1,8 @@
-"""Combine consecutive T/Tdg gates in a Clifford+T circuit."""
+﻿"""Combine consecutive T/Tdg gates in a Clifford+T circuit."""
 
-from circuit import DAGCircuit
-from optimize.basepasses import TransformationPass
-from circuit.library import SGate, SdgGate
+from janus.circuit import DAGCircuit
+from janus.optimize.basepasses import TransformationPass
+from janus.circuit.library import SGate, SdgGate
 
 
 class TChinMerger(TransformationPass):
@@ -28,7 +28,7 @@ class TChinMerger(TransformationPass):
         Returns:
             DAGCircuit: Transformed DAG.
         """
-        from circuit.library import ZGate, TGate, TdgGate
+        from janus.circuit.library import ZGate, TGate, TdgGate
 
         new_dag = dag.copy_empty_like()
 

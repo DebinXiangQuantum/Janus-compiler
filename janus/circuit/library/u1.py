@@ -1,4 +1,4 @@
-"""U1 Gate - compatibility module"""
+﻿"""U1 Gate - compatibility module"""
 
 from .standard_gates import U1Gate
 

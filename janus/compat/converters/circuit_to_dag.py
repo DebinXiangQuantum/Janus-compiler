@@ -1,4 +1,4 @@
-"""
+﻿"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -21,7 +21,7 @@ Modified for Janus - removed qiskit dependencies
 # STUB: BlueprintCircuit not needed for basic functionality
 BlueprintCircuit = type('BlueprintCircuit', (), {})
 # Use Janus's native circuit_to_dag instead of Rust accelerated version
-from circuit.dag import circuit_to_dag as _janus_circuit_to_dag
+from janus.circuit.dag import circuit_to_dag as _janus_circuit_to_dag
 
 
 def circuit_to_dag(circuit, copy_operations=True, *, qubit_order=None, clbit_order=None):
@@ -54,8 +54,8 @@ def circuit_to_dag(circuit, copy_operations=True, *, qubit_order=None, clbit_ord
             :nofigs:
 
             from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
-            from circuit.dag import DAGCircuit
-            from compat.converters import circuit_to_dag
+            from janus.circuit.dag import DAGCircuit
+            from janus.compat.converters import circuit_to_dag
 
             q = QuantumRegister(3, 'q')
             c = ClassicalRegister(3, 'c')

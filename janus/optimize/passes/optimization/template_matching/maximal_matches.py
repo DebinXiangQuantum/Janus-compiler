@@ -1,4 +1,4 @@
-"""
+﻿"""
 It stores all maximal matches from the given matches obtained by the template
 matching algorithm.
 """
