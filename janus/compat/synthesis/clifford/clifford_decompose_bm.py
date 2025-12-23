@@ -20,12 +20,9 @@ Circuit synthesis for 2-qubit and 3-qubit Cliffords based on Bravyi & Maslov
 decomposition.
 """
 
-from janus.circuit import QuantumCircuit
-from janus.compat.Clifford import Clifford
-
-from janus.compat.accelerate.synthesis.clifford import (
-    synth_clifford_bm as synth_clifford_bm_inner,
-)
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
+from janus.compat.exceptions import QiskitError
 
 
 def synth_clifford_bm(clifford: Clifford) -> QuantumCircuit:
@@ -46,9 +43,10 @@ def synth_clifford_bm(clifford: Clifford) -> QuantumCircuit:
            structure of the Clifford group*,
            `arXiv:2003.09412 [quant-ph] <https://arxiv.org/abs/2003.09412>`_
     """
-    circuit = QuantumCircuit._from_circuit_data(
-        synth_clifford_bm_inner(clifford.tableau.astype(bool)),
-        legacy_qubits=True,
-        name=str(clifford),
-    )
-    return circuit
+    num_qubits = clifford.num_qubits
+    if num_qubits > 3:
+        raise QiskitError("synth_clifford_bm only supports up to 3 qubits")
+    
+    # Fallback to greedy synthesis for now
+    from janus.compat.synthesis.clifford.clifford_decompose_greedy import synth_clifford_greedy
+    return synth_clifford_greedy(clifford)

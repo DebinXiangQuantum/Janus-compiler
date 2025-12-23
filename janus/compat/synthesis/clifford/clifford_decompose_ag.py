@@ -27,7 +27,7 @@ Circuit synthesis for the Clifford class.
 import numpy as np
 
 from janus.circuit import QuantumCircuit
-from janus.compat.Clifford import Clifford
+from janus.compat.clifford import Clifford
 from janus.compat.clifford_circuits import (
     _append_cx,
     _append_h,

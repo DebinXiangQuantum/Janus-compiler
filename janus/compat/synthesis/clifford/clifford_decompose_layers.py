@@ -1,4 +1,5 @@
-﻿"""
+﻿from __future__ import annotations
+"""
 This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
@@ -19,14 +20,12 @@ Modified for Janus - removed qiskit dependencies
 Circuit synthesis for the Clifford class into layers.
 """
 # pylint: disable=invalid-name
-
-from __future__ import annotations
 from collections.abc import Callable
 import numpy as np
 
 from janus.circuit import QuantumCircuit
 from janus.compat.exceptions import QiskitError
-from janus.compat.Clifford import Clifford  # pylint: disable=cyclic-import
+from janus.compat.clifford import Clifford  # pylint: disable=cyclic-import
 from janus.compat.clifford_circuits import (
     _append_h,
     _append_s,

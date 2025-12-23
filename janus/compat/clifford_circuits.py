@@ -3,6 +3,7 @@ This file is adapted from Qiskit
 Original: qiskit/...
 Modified for Janus - removed qiskit dependencies
 """
+from __future__ import annotations
 
 # This code is part of Qiskit.
 #
@@ -19,13 +20,10 @@ Modified for Janus - removed qiskit dependencies
 Circuit simulation for the Clifford class.
 """
 
-from __future__ import annotations
-
 import numpy as np
 
 from janus.circuit import Barrier, Delay, Gate
-from janus.circuit.exceptions import CircuitError
-from janus.compat.exceptions import QiskitError
+from janus.compat.exceptions import QiskitError, CircuitError
 
 
 def _append_circuit(clifford, circuit, qargs=None):

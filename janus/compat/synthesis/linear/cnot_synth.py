@@ -68,8 +68,13 @@ def synth_cnot_count_full_pmh(
             f"({normalized.shape[1]})."
         )
 
-    # call Rust implementation with normalized input
-    circuit_data = fast_pmh(normalized, section_size)
+    # call Python implementation with normalized input
+    gates = fast_pmh(normalized, section_size if section_size else 2)
 
-    # construct circuit from the data
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    # construct circuit from the gate list
+    n = normalized.shape[0]
+    circuit = QuantumCircuit(n)
+    for ctrl, tgt in gates:
+        circuit.cx(ctrl, tgt)
+    
+    return circuit

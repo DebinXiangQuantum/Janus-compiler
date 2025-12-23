@@ -14,10 +14,10 @@ import numpy as np
 from janus.compat.exceptions import QiskitError
 from janus.circuit import Circuit as QuantumCircuit
 from janus.optimize.synthesis.linear.linear_matrix_utils import check_invertible_binary_matrix
-from qiskit._accelerate.synthesis.linear import py_synth_cnot_depth_line_kms as fast_kms
+from janus.compat.accelerate.synthesis.linear import py_synth_cnot_depth_line_kms as fast_kms
 
 
-def synthesize_cnot_depth_lnn_kms(mat: np.ndarray[bool]) -> QuantumCircuit:
+def synthesize_cnot_depth_lnn_kms(mat: np.ndarray) -> QuantumCircuit:
     """
     Synthesize linear reversible circuit for linear nearest-neighbor architectures using
     Kutin, Moulton, Smithline method.
@@ -45,8 +45,15 @@ def synthesize_cnot_depth_lnn_kms(mat: np.ndarray[bool]) -> QuantumCircuit:
 
     circuit_data = fast_kms(mat)
 
-    # construct circuit from the data
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    # Build circuit from gate list
+    n = mat.shape[0]
+    circuit = QuantumCircuit(n)
+    
+    for gate_name, qubits in circuit_data:
+        if gate_name == 'cx':
+            circuit.cx(qubits[0], qubits[1])
+    
+    return circuit
 
 
 # Backward compatibility alias

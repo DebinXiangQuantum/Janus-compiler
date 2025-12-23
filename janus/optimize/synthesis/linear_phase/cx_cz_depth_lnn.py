@@ -18,64 +18,6 @@ References:
 
 import numpy as np
 from janus.circuit import Circuit as QuantumCircuit
-from janus.circuit.library import CXGate, CZGate
-
-
-def py_synth_cx_cz_depth_line_my(mat_x: np.ndarray, mat_z: np.ndarray):
-    """
-    Python实现的CX-CZ合成算法,用于线性最近邻拓扑
-
-    这是qiskit._accelerate.synthesis.linear_phase.py_synth_cx_cz_depth_line_my的Python替代实现
-
-    Args:
-        mat_x: 布尔可逆矩阵,表示CX电路
-        mat_z: 布尔对称矩阵,表示CZ电路
-
-    Returns:
-        电路数据列表 [(gate, qubits, clbits), ...]
-    """
-    n = mat_x.shape[0]
-    circuit_data = []
-
-    # 简化实现:先添加CZ门,再添加CX门
-    # CZ门部分
-    for i in range(n):
-        for j in range(i+1, n):
-            if mat_z[i, j]:
-                circuit_data.append((CZGate(), [i, j], []))
-
-    # CX门部分 - 使用高斯消元
-    mat = mat_x.copy()
-    for col in range(n):
-        # 找主元
-        pivot = -1
-        for row in range(col, n):
-            if mat[row, col]:
-                pivot = row
-                break
-
-        if pivot == -1:
-            continue
-
-        # 如果主元不在对角线,交换
-        if pivot != col:
-            mat[[col, pivot]] = mat[[pivot, col]]
-            # 使用SWAP门或三个CX实现交换
-            if abs(pivot - col) == 1:
-                # 相邻,使用SWAP
-                for _ in range(3):
-                    circuit_data.append((CXGate(), [col, pivot], []))
-                    circuit_data.append((CXGate(), [pivot, col], []))
-                    circuit_data.append((CXGate(), [col, pivot], []))
-                break
-
-        # 消元
-        for row in range(n):
-            if row != col and mat[row, col]:
-                circuit_data.append((CXGate(), [col, row], []))
-                mat[row] ^= mat[col]
-
-    return circuit_data
 
 
 def synthesize_cx_cz_depth_lnn_my(mat_x: np.ndarray, mat_z: np.ndarray) -> QuantumCircuit:
@@ -102,8 +44,38 @@ def synthesize_cx_cz_depth_lnn_my(mat_x: np.ndarray, mat_z: np.ndarray) -> Quant
            Hadamard-free Clifford transformations they generate*,
            `arXiv:2210.16195 <https://arxiv.org/abs/2210.16195>`_.
     """
-    circuit_data = py_synth_cx_cz_depth_line_my(mat_x.astype(bool), mat_z.astype(bool))
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    mat_x = np.asarray(mat_x, dtype=bool)
+    mat_z = np.asarray(mat_z, dtype=bool)
+    n = mat_x.shape[0]
+    circuit = QuantumCircuit(n)
+    
+    # Simple implementation: first CZ gates, then CX gates
+    # Add CZ gates
+    for i in range(n):
+        for j in range(i + 1, n):
+            if mat_z[i, j]:
+                circuit.cz(i, j)
+    
+    # Add CX gates based on mat_x (simple Gaussian elimination)
+    work_mat = mat_x.copy()
+    for col in range(n):
+        # Find pivot
+        pivot = -1
+        for row in range(col, n):
+            if work_mat[row, col]:
+                pivot = row
+                break
+        if pivot == -1:
+            continue
+        if pivot != col:
+            work_mat[[col, pivot]] = work_mat[[pivot, col]]
+        # Eliminate
+        for row in range(n):
+            if row != col and work_mat[row, col]:
+                circuit.cx(col, row)
+                work_mat[row] ^= work_mat[col]
+    
+    return circuit
 
 
 # Backward compatibility alias

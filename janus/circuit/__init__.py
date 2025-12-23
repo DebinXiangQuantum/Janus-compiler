@@ -51,6 +51,7 @@ from .library import (
     Barrier,
     Measure,
     Reset,
+    Delay,
 )
 
 __all__ = [
@@ -98,4 +99,5 @@ __all__ = [
     'Barrier',
     'Measure',
     'Reset',
+    'Delay',
 ]
