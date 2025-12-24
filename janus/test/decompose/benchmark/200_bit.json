@@ -7,13 +7,18 @@
     },
     {
       "name": "cx",
-      "qubits": [0, 1],
+      "qubits": [0, 199],
       "params": []
     },
     {
       "name": "rz",
-      "qubits": [1],
+      "qubits": [50],
       "params": [1.5707963267948966]
+    },
+    {
+      "name": "cz",
+      "qubits": [25, 75],
+      "params": []
     }
   ]
 ]
