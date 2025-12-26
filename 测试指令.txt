@@ -1,0 +1,160 @@
+================================================================================
+                    量子电路优化测试指令手册
+================================================================================
+
+一、小规模测试（使用benchmark/opt_*.json）
+================================================================================
+
+# 技术1: Clifford+Rz指令集优化 - 大量T门合并优化
+python test/optimize/test_tech1_clifford_rz.py --file benchmark/opt_1.json
+
+# 技术1: Clifford+Rz指令集优化 - 复杂Clifford门交换和合并优化
+python test/optimize/test_tech1_clifford_rz.py --file benchmark/opt_2.json
+
+# 技术2: 量子门合并规则优化
+python test/optimize/test_tech2_gate_fusion.py --file benchmark/opt_3.json
+
+# 技术3: 量子门交换性优化
+python test/optimize/test_tech3_commutativity.py --file benchmark/opt_4.json
+
+# 技术4: 模版匹配优化
+python test/optimize/test_tech4_template_matching.py --file benchmark/opt_5.json
+
+# 技术5: 局部子电路的KAK分解优化
+python test/optimize/test_tech5_kak_decompose.py --file benchmark/opt_6.json
+
+# 技术6: Clifford量子电路的优化
+python test/optimize/test_tech6_clifford_synth.py --file benchmark/opt_7.json
+
+# 技术7: CNOT量子电路优化
+python test/optimize/test_tech7_cnot_synth.py --file benchmark/opt_8.json
+
+# 技术8: 量子优化算法基准测试
+python test/optimize/test_tech8_benchmarks.py --file benchmark/opt_9.json
+
+# 技术9: 量子资源估计与评估
+python test/optimize/test_tech9_metrics_analysis.py --file benchmark/opt_10.json
+
+# 技术10: 根据输入量子电路选择最优优化方案
+python test/optimize/test_tech10_auto_selection.py --file benchmark/opt_11.json
+python test/optimize/test_tech10_auto_selection.py --file benchmark/opt_12.json
+
+
+二、大规模测试（使用benchmark/large_scale/*.json，200量子比特，~10000门）
+================================================================================
+
+# 技术1: Clifford+Rz指令集优化 - 大规模T门电路
+python test/optimize/test_tech1_clifford_rz.py --file benchmark/large_scale/tech1_t_gate_circuit.json
+python test/optimize/test_tech1_clifford_rz.py --file benchmark/large_scale/tech1_clifford_t_circuit.json
+
+# 技术2: 量子门合并规则优化 - 大规模电路
+python test/optimize/test_tech2_gate_fusion.py --file benchmark/large_scale/tech2_gate_fusion_circuit.json
+python test/optimize/test_tech2_gate_fusion.py --file benchmark/large_scale/tech2_block_optimization_circuit.json
+
+# 技术3: 量子门交换性优化 - 大规模电路
+python test/optimize/test_tech3_commutativity.py --file benchmark/large_scale/tech3_self_adjoint_circuit.json
+python test/optimize/test_tech3_commutativity.py --file benchmark/large_scale/tech3_inverse_gate_circuit.json
+python test/optimize/test_tech3_commutativity.py --file benchmark/large_scale/tech3_combined_circuit.json
+
+# 技术4: 模版匹配优化 - 大规模电路
+python test/optimize/test_tech4_template_matching.py --file benchmark/large_scale/tech4_template_matching_circuit.json
+python test/optimize/test_tech4_template_matching.py --file benchmark/large_scale/tech4_pattern_replacement_circuit.json
+
+# 技术5: 局部子电路的KAK分解优化 - 大规模电路
+python test/optimize/test_tech5_kak_decompose.py --file benchmark/large_scale/tech5_two_qubit_block_circuit.json
+python test/optimize/test_tech5_kak_decompose.py --file benchmark/large_scale/tech5_variational_circuit.json
+
+# 技术6: Clifford量子电路的优化 - 大规模电路
+python test/optimize/test_tech6_clifford_synth.py --file benchmark/large_scale/tech6_clifford_circuit.json
+python test/optimize/test_tech6_clifford_synth.py --file benchmark/large_scale/tech6_stabilizer_circuit.json
+
+# 技术7: CNOT量子电路优化 - 大规模电路
+python test/optimize/test_tech7_cnot_synth.py --file benchmark/large_scale/tech7_cnot_circuit.json
+python test/optimize/test_tech7_cnot_synth.py --file benchmark/large_scale/tech7_cnot_phase_circuit.json
+
+# 技术8: 量子优化算法基准测试 - 大规模电路
+python test/optimize/test_tech8_benchmarks.py --file benchmark/large_scale/tech8_qft_style_circuit.json
+python test/optimize/test_tech8_benchmarks.py --file benchmark/large_scale/tech8_vqe_style_circuit.json
+python test/optimize/test_tech8_benchmarks.py --file benchmark/large_scale/tech8_grover_style_circuit.json
+
+# 技术9: 量子资源估计与评估 - 大规模电路
+python test/optimize/test_tech9_metrics_analysis.py --file benchmark/large_scale/tech9_resource_analysis_circuit.json
+python test/optimize/test_tech9_metrics_analysis.py --file benchmark/large_scale/tech9_optimization_impact_circuit.json
+
+# 技术10: 根据输入量子电路选择最优优化方案 - 大规模电路
+python test/optimize/test_tech10_auto_selection.py --file benchmark/large_scale/tech10_intelligent_optimization_circuit.json
+python test/optimize/test_tech10_auto_selection.py --file benchmark/large_scale/tech10_t_heavy_circuit.json
+python test/optimize/test_tech10_auto_selection.py --file benchmark/large_scale/tech10_clifford_heavy_circuit.json
+python test/optimize/test_tech10_auto_selection.py --file benchmark/large_scale/tech10_comparison_circuit.json
+
+
+三、使用内置大规模电路生成器测试（无需JSON文件）
+================================================================================
+
+# 直接运行测试脚本，自动生成200量子比特、~10000门的测试电路
+python test/optimize/test_large_scale_tech1.py
+python test/optimize/test_large_scale_tech2.py
+python test/optimize/test_large_scale_tech3.py
+python test/optimize/test_large_scale_tech4.py
+python test/optimize/test_large_scale_tech5.py
+python test/optimize/test_large_scale_tech6.py
+python test/optimize/test_large_scale_tech7.py
+python test/optimize/test_large_scale_tech8.py
+python test/optimize/test_large_scale_tech9.py
+python test/optimize/test_large_scale_tech10.py
+
+
+四、批量运行所有测试
+================================================================================
+
+# Windows PowerShell - 运行所有小规模测试
+python test/optimize/test_tech1_clifford_rz.py --file benchmark/opt_1.json; python test/optimize/test_tech1_clifford_rz.py --file benchmark/opt_2.json; python test/optimize/test_tech2_gate_fusion.py --file benchmark/opt_3.json; python test/optimize/test_tech3_commutativity.py --file benchmark/opt_4.json; python test/optimize/test_tech4_template_matching.py --file benchmark/opt_5.json; python test/optimize/test_tech5_kak_decompose.py --file benchmark/opt_6.json; python test/optimize/test_tech6_clifford_synth.py --file benchmark/opt_7.json; python test/optimize/test_tech7_cnot_synth.py --file benchmark/opt_8.json; python test/optimize/test_tech8_benchmarks.py --file benchmark/opt_9.json; python test/optimize/test_tech9_metrics_analysis.py --file benchmark/opt_10.json; python test/optimize/test_tech10_auto_selection.py --file benchmark/opt_11.json; python test/optimize/test_tech10_auto_selection.py --file benchmark/opt_12.json
+
+# Windows PowerShell - 运行所有内置大规模测试
+python test/optimize/test_large_scale_tech1.py; python test/optimize/test_large_scale_tech2.py; python test/optimize/test_large_scale_tech3.py; python test/optimize/test_large_scale_tech4.py; python test/optimize/test_large_scale_tech5.py; python test/optimize/test_large_scale_tech6.py; python test/optimize/test_large_scale_tech7.py; python test/optimize/test_large_scale_tech8.py; python test/optimize/test_large_scale_tech9.py; python test/optimize/test_large_scale_tech10.py
+
+
+================================================================================
+                    预期输出
+================================================================================
+
+每个测试脚本运行后应输出：
+1. 电路描述信息
+2. 使用的优化API
+3. 原始电路规模（量子比特数、门数、深度）
+4. 优化后电路规模
+5. 门数减少数量和百分比（应≥30%）
+6. 最后一行输出："输出优化后的量子电路。"
+
+
+
+================================================================================
+                    测试结果示例
+================================================================================
+
+小规模测试示例（benchmark/opt_1.json）：
+----------------------------------------------------------------------
+Circuit size: 4 qubits, 20 gates
+Original T gates: 18
+After optimization: 7 gates
+Gate reduction: 13 (65.0%)
+输出优化后的量子电路。
+
+大规模测试示例（benchmark/large_scale/tech1_t_gate_circuit.json）：
+----------------------------------------------------------------------
+Circuit size: 200 qubits, 10002 gates
+Original T gates: 8917
+After optimization: 3877 gates
+Gate reduction: 6125 (61.2%)
+输出优化后的量子电路。
+
+
+================================================================================
+                    注意事项
+================================================================================
+
+1. 所有测试脚本支持 --file 参数指定输入电路JSON文件
+2. 不带参数运行时，脚本会自动生成200量子比特、~10000门的大规模测试电路
+3. benchmark目录已从test/optimize/benchmack移动到项目根目录benchmark/
+4. 目录名从"benchmack"修正为"benchmark"（拼写修正）
+
