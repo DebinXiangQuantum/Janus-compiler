@@ -3,6 +3,7 @@ Janus 电路转换器
 
 提供电路数组格式转换功能，支持所有标准门
 """
+from heapq import merge
 from typing import Optional
 
 from .circuit import Circuit
@@ -108,6 +109,13 @@ FOUR_PARAM_GATES = {
     'cu': CUGate,
 }
 
+GATE_MAP = {
+    **NO_PARAM_GATES,
+    **SINGLE_PARAM_GATES,
+    **TWO_PARAM_GATES,
+    **THREE_PARAM_GATES,
+    **FOUR_PARAM_GATES,
+}
 
 def _create_gate(name: str, params: list, qubits: list = None) -> Optional[Gate]:
     """根据名称和参数创建门

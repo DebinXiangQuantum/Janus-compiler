@@ -182,7 +182,7 @@ class NoisySimulator:
     
     def _evolve_with_noise(self, dm: DensityMatrix, circuit) -> DensityMatrix:
         """带噪声演化"""
-        from ..circuit.parameter import is_parameterized
+        from janus.circuit.parameter import is_parameterized
         
         for inst in circuit.instructions:
             if is_parameterized(inst.operation):
@@ -247,7 +247,7 @@ class NoisySimulator:
     
     def _bind_parameters(self, circuit, parameter_binds: Dict):
         """绑定参数"""
-        from ..circuit.parameter import Parameter
+        from janus.circuit.parameter import Parameter
         
         if hasattr(circuit, 'bind_parameters'):
             return circuit.bind_parameters(parameter_binds)

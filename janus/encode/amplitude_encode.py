@@ -238,29 +238,35 @@ def _apply_cswaps(circuit: Circuit, angle_tree: NodeAngleTree, qubits: List[int]
 
 
 def _apply_index_gates(circuit: Circuit, value: int, control_qubits: List[int], num_controls: int):
-    """根据索引值应用X门到控制比特"""
+    """根据索引值应用X门到控制比特
+    
+    与 C++ Encode.cpp 中的 _index 函数对应：
+    遍历顺序是从最高有效位到最低有效位，
+    对应 control_qubits[0] 到 control_qubits[num_controls-1]
+    """
     if not control_qubits or num_controls == 0:
         return
     
     # 获取value的二进制表示
     binary = format(value, f'0{num_controls}b')
     
-    # 根据二进制位应用X门
-    for i, bit in enumerate(reversed(binary)):
+    # 从高位到低位遍历（不使用 reversed！与 C++ 一致）
+    for i, bit in enumerate(binary):
         if bit == '1':
             circuit.x(control_qubits[i])
 
 
 def _output(angle_tree: NodeAngleTree, qubits: List[int], output_list: List[int]):
-    """递归遍历树以确定输出量子比特"""
+    """递归遍历树以确定输出量子比特（沿着 left 优先路径）"""
     if angle_tree:
         if angle_tree.left:
             _output(angle_tree.left, qubits, output_list)
-        else:
-            if angle_tree.right:
-                _output(angle_tree.right, qubits, output_list)
+        elif angle_tree.right:
+            _output(angle_tree.right, qubits, output_list)
         
         output_list.append(angle_tree.qubit_index)
+
+
 
 
 def bidrc_encode(
@@ -300,7 +306,8 @@ def bidrc_encode(
             split_temp = n_qubits // 2 + 1
         else:
             split_temp = n_qubits // 2
-    
+    if split <0:
+        split_temp = n_qubits+split
     # 检查参数合法性
     if split_temp > ceil(log2(len(data_temp))):
         raise ValueError("Bid_Amplitude_encode 参数错误：split值过大")
@@ -319,8 +326,12 @@ def bidrc_encode(
     start_level = n_qubits - split_temp
     num_qubits_needed = _add_register(angle_tree, start_level)
     
-    # 创建量子电路
-    circuit = Circuit(num_qubits_needed)
+    # 记录输出量子比特（在创建电路前先获取）
+    output_qubits = []
+    _output(angle_tree, list(range(num_qubits_needed)), output_qubits)
+    
+    # 创建量子电路（包含足够的经典比特用于测量）
+    circuit = Circuit(num_qubits_needed, len(output_qubits))
     
     # 生成量子电路
     qubits_list = list(range(num_qubits_needed))
@@ -335,9 +346,8 @@ def bidrc_encode(
     # 自底向上应用旋转与受控 SWAP（在 split 点以下）
     if mode in ('full', 'bottom_up'):
         _bottom_up_tree_walk(circuit, angle_tree, qubits_list, start_level)
-    
-    # 记录输出量子比特
-    output_qubits = []
-    _output(angle_tree, qubits_list, output_qubits)
-    
-    return circuit 
+    # 在输出量子比特上添加测量
+    print(output_qubits)
+    for i, qubit in enumerate(output_qubits):
+        circuit.measure(qubit, i)
+    return circuit

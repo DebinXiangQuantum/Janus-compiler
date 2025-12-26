@@ -252,7 +252,7 @@ class StatevectorSimulator:
     
     def _validate_circuit(self, circuit):
         """验证电路"""
-        from ..circuit.parameter import Parameter, ParameterExpression
+        from janus.circuit.parameter import Parameter, ParameterExpression
         
         # 检查是否有未绑定的参数
         for inst in circuit.instructions:
@@ -270,7 +270,7 @@ class StatevectorSimulator:
     
     def _bind_parameters(self, circuit, parameter_binds: Dict):
         """绑定参数到电路"""
-        from ..circuit.parameter import Parameter, ParameterExpression
+        from janus.circuit.parameter import Parameter, ParameterExpression
         
         # 将字符串键转换为 Parameter 对象
         converted_binds = {}
