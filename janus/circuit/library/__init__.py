@@ -1,4 +1,4 @@
-"""
+﻿"""
 Janus 标准量子门库
 
 """
@@ -83,6 +83,8 @@ from .standard_gates import (
     MCRZGate,
 )
 
+from .qft import QFT
+
 __all__ = [
     # 单比特 Pauli 门
     'IGate',
@@ -161,6 +163,8 @@ __all__ = [
     'MCRXGate',
     'MCRYGate',
     'MCRZGate',
+    # QFT
+    'QFT',
     # 工具函数
     'get_gate_class',
 ]

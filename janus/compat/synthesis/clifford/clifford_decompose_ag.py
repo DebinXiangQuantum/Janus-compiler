@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2021, 2022.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -26,9 +26,9 @@ Circuit synthesis for the Clifford class.
 
 import numpy as np
 
-from circuit import QuantumCircuit
-from compat.Clifford import Clifford
-from compat.clifford_circuits import (
+from janus.circuit import QuantumCircuit
+from janus.compat.clifford import Clifford
+from janus.compat.clifford_circuits import (
     _append_cx,
     _append_h,
     _append_s,

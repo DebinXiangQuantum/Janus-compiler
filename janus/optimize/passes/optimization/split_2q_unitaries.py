@@ -1,9 +1,9 @@
-"""Splits each two-qubit gate in the `dag` into two single-qubit gates, if possible without error."""
+﻿"""Splits each two-qubit gate in the `dag` into two single-qubit gates, if possible without error."""
 
-from optimize.basepasses import TransformationPass
-# FIXME: Remove qiskit import import Layout
-from circuit import DAGCircuit
-# FIXME: from # FIXME: qiskit._accelerate.split_2q_unitaries import split_2q_unitaries
+from janus.optimize.basepasses import TransformationPass
+# Import Layout
+from janus.circuit import DAGCircuit
+# Accelerated implementation.split_2q_unitaries import split_2q_unitaries
 
 
 class TwoQubitUnitarySplitter(TransformationPass):

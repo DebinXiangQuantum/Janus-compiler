@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2021
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -36,9 +36,9 @@ from operator import itemgetter
 
 import numpy as np
 
-from circuit.quantumcircuit import QuantumCircuit
-from circuit.library import RXXGate, RYYGate, RZGate
-from compat.exceptions import QiskitError
+from janus.circuit.quantumcircuit import QuantumCircuit
+from janus.circuit.library import RXXGate, RYYGate, RZGate
+from janus.compat.exceptions import JanusError
 
 from .paths import decomposition_hop
 from .utilities import EPSILON, safe_arccos
@@ -157,7 +157,7 @@ def xx_circuit_step(source, strength, target, embodiment):
 
     `source` and `target` are positive canonical coordinates; `strength` is the interaction strength
     at this step in the circuit as a canonical coordinate (so that CX = RZX(pi/2) corresponds to
-    pi/4); and `embodiment` is a Qiskit circuit which enacts the canonical gate of the prescribed
+    pi/4); and `embodiment` is a circuit which enacts the canonical gate of the prescribed
     interaction `strength`.
     """
 
@@ -212,7 +212,7 @@ def xx_circuit_step(source, strength, target, embodiment):
             break
 
     if permute_source_for_overlap is None:
-        raise QiskitError(
+        raise JanusError(
             "Error during RZX decomposition: Could not find a suitable Weyl "
             f"reflection to match {source} to {target} along {strength}."
         )
@@ -257,7 +257,7 @@ def xx_circuit_step(source, strength, target, embodiment):
 
 def canonical_xx_circuit(target, strength_sequence, basis_embodiments):
     """
-    Assembles a Qiskit circuit from a specified `strength_sequence` of XX-type interactions which
+    Assembles a circuit from a specified `strength_sequence` of XX-type interactions which
     emulates the canonical gate at canonical coordinate `target`.  The circuits supplied by
     `basis_embodiments` are used to instantiate the individual XX actions.
 

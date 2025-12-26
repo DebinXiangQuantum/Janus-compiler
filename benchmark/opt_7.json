@@ -1,0 +1,27 @@
+{
+    "description": "Clifford量子电路优化测试",
+    "n_qubits": 3,
+    "gates": [
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "S", "qubits": [0]},
+        {"gate": "S", "qubits": [0]},
+        {"gate": "S", "qubits": [0]},
+        {"gate": "S", "qubits": [0]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "S", "qubits": [1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "Sdg", "qubits": [1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "X", "qubits": [2]},
+        {"gate": "X", "qubits": [2]},
+        {"gate": "Y", "qubits": [2]},
+        {"gate": "Y", "qubits": [2]},
+        {"gate": "Z", "qubits": [2]},
+        {"gate": "Z", "qubits": [2]}
+    ]
+}

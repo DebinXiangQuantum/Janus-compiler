@@ -1,4 +1,4 @@
-"""
+﻿"""
 Template matching in the backward direction, it takes an initial match, a
 configuration of qubit, both circuit and template as inputs and the list
 obtained from forward match. The result is a list of matches between the
@@ -14,7 +14,7 @@ Exact and practical pattern matching for quantum circuit optimization.
 """
 import heapq
 
-from circuit import Gate as ControlledGate  # Simplified
+from janus.circuit import Gate as ControlledGate  # Simplified
 
 
 class Match:

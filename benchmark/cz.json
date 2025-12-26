@@ -1,9 +1,0 @@
-{
-  "circuit": [
-    {
-      "name": "cz",
-      "qubits": [0, 1],
-      "params": []
-    }
-  ]
-}

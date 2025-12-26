@@ -1,4 +1,4 @@
-"""
+﻿"""
 Template matching substitution, given a list of maximal matches it substitutes
 them in circuit and creates a new optimized dag version of the circuit.
 """
@@ -6,11 +6,11 @@ import collections
 import copy
 import itertools
 
-from circuit import Parameter, ParameterExpression
-from circuit import DAGCircuit
-from compat.dagdependency import DAGDependency
-from compat.converters.dagdependency_to_dag import dagdependency_to_dag
-from compat import _optionals
+from janus.circuit import Parameter, ParameterExpression
+from janus.circuit import DAGCircuit
+from janus.compat.dagdependency import DAGDependency
+from janus.compat.converters.dagdependency_to_dag import dagdependency_to_dag
+from janus.compat import _optionals
 
 
 class SubstitutionConfig:
@@ -39,7 +39,8 @@ class SubstitutionConfig:
     def has_parameters(self):
         """Ensure that the template does not have parameters."""
         for node in self.template_dag_dep.get_nodes():
-            for param in node.op.params:
+            params = getattr(node.op, 'params', [])
+            for param in params:
                 if isinstance(param, ParameterExpression):
                     return True
 
@@ -361,6 +362,10 @@ class TemplateCircuitSubstitutor:
 
         dag_dep_opt.name = self.circuit_dag_dep.name
 
+        # Copy qubits and clbits from the original circuit
+        dag_dep_opt.qubits = list(self.circuit_dag_dep.qubits)
+        dag_dep_opt.clbits = list(self.circuit_dag_dep.clbits)
+
         qregs = list(self.circuit_dag_dep.qregs.values())
         cregs = list(self.circuit_dag_dep.cregs.values())
 
@@ -497,7 +502,7 @@ class TemplateCircuitSubstitutor:
         # add parameters from circuit to circuit_params
         for idx, _ in enumerate(template_sublist):
             qc_idx = circuit_sublist[idx]
-            parameters = self.circuit_dag_dep.get_node(qc_idx).op.params
+            parameters = getattr(self.circuit_dag_dep.get_node(qc_idx).op, 'params', [])
             circuit_params += parameters
             for parameter in parameters:
                 if isinstance(parameter, ParameterExpression):
@@ -508,7 +513,7 @@ class TemplateCircuitSubstitutor:
         def dummy_parameter():
             # Strictly not _guaranteed_ to avoid naming clashes, but if someone's calling their
             # parameters this then that's their own fault.
-            return Parameter(f"_qiskit_template_dummy_{next(_dummy_counter)}")
+            return Parameter(f"_janus_template_dummy_{next(_dummy_counter)}")
 
         # Substitutions for parameters that have clashing names between the input circuits and the
         # defined templates.
@@ -519,7 +524,7 @@ class TemplateCircuitSubstitutor:
         for t_idx in template_sublist:
             node = template_dag_dep.get_node(t_idx)
             sub_node_params = []
-            for t_param_exp in node.op.params:
+            for t_param_exp in getattr(node.op, 'params', []):
                 if isinstance(t_param_exp, ParameterExpression):
                     for t_param in t_param_exp.parameters:
                         if t_param.name in circuit_params_set:
@@ -527,13 +532,14 @@ class TemplateCircuitSubstitutor:
                             t_param_exp = t_param_exp.assign(t_param, new_param)
                 sub_node_params.append(t_param_exp)
                 template_params.append(t_param_exp)
-            if not node.op.mutable:
+            if getattr(node.op, 'mutable', True) is False:
                 node.op = node.op.to_mutable()
-            node.op.params = sub_node_params
+            if hasattr(node.op, 'params'):
+                node.op.params = sub_node_params
 
         for node in template_dag_dep.get_nodes():
             sub_node_params = []
-            for param_exp in node.op.params:
+            for param_exp in getattr(node.op, 'params', []):
                 if isinstance(param_exp, ParameterExpression):
                     for param in param_exp.parameters:
                         if param.name in template_clash_substitutions:
@@ -542,9 +548,10 @@ class TemplateCircuitSubstitutor:
                             )
                 sub_node_params.append(param_exp)
 
-            if not node.op.mutable:
+            if getattr(node.op, 'mutable', True) is False:
                 node.op = node.op.to_mutable()
-            node.op.params = sub_node_params
+            if hasattr(node.op, 'params'):
+                node.op.params = sub_node_params
 
         # Create the fake binding dict and check
         equations, circ_dict, temp_symbols = [], {}, {}
@@ -585,7 +592,7 @@ class TemplateCircuitSubstitutor:
 
         for node in template_dag_dep.get_nodes():
             bound_params = []
-            for param_exp in node.op.params:
+            for param_exp in getattr(node.op, 'params', []):
                 if isinstance(param_exp, ParameterExpression):
                     for param in param_exp.parameters:
                         if param in fake_bind:
@@ -595,9 +602,10 @@ class TemplateCircuitSubstitutor:
                     param_exp = float(param_exp)
                 bound_params.append(param_exp)
 
-            if not node.op.mutable:
+            if getattr(node.op, 'mutable', True) is False:
                 node.op = node.op.to_mutable()
-            node.op.params = bound_params
+            if hasattr(node.op, 'params'):
+                node.op.params = bound_params
 
         return template_dag_dep
 
@@ -607,13 +615,13 @@ class TemplateCircuitSubstitutor:
         parameters in the circuit.
         """
         template_params = set()
-        for param_list in (node.op.params for node in template.get_nodes()):
+        for param_list in (getattr(node.op, 'params', []) for node in template.get_nodes()):
             for param_exp in param_list:
                 if isinstance(param_exp, ParameterExpression):
                     template_params.update(param_exp.parameters)
 
         circuit_params = set()
-        for param_list in (node.op.params for node in self.circuit_dag_dep.get_nodes()):
+        for param_list in (getattr(node.op, 'params', []) for node in self.circuit_dag_dep.get_nodes()):
             for param_exp in param_list:
                 if isinstance(param_exp, ParameterExpression):
                     circuit_params.update(param_exp.parameters)

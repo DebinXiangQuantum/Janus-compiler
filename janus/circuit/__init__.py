@@ -1,135 +1,76 @@
-"""
+﻿"""
 Janus 量子电路模块
 
 提供量子电路的构建、操作和表示
 """
 from .operation import Operation
-from .gate import Gate, ControlledGate, ClassicalControlledGate
+from .gate import Gate
 from .instruction import Instruction
 from .layer import Layer
-from .circuit import Circuit, SeperatableCircuit
+from .circuit import Circuit
+# Alias for compatibility
+QuantumCircuit = Circuit
+
 from .qubit import Qubit, QuantumRegister
 from .clbit import Clbit, ClassicalRegister
 from .parameter import Parameter, ParameterExpression
-from .dag import (
-    DAGCircuit, DAGNode, DAGOpNode, DAGInNode, DAGOutNode,
-    circuit_to_dag, dag_to_circuit,
-    DAGDependency, circuit_to_dag_dependency, dag_dependency_to_circuit,
-    BlockCollector, BlockSplitter, BlockCollapser, split_block_into_layers
-)
+from .dag import DAGCircuit, DAGNode, DAGOpNode, DAGInNode, DAGOutNode, circuit_to_dag, dag_to_circuit
 
-# 文件读写
-from .io import (
-    load_circuit,
-    get_circuits_dir,
-    list_circuits,
-)
+# Compatibility stubs
+class CircuitInstruction:
+    """Stub for CircuitInstruction - represents a gate application in a circuit."""
+    def __init__(self, operation, qubits=None, clbits=None):
+        self.operation = operation
+        self.qubits = qubits or []
+        self.clbits = clbits or []
+
+# Bit is an alias for base bit class
+class Bit:
+    """Stub for Bit class."""
+    def __init__(self, index=None):
+        self.index = index
 
 # 标准门
 from .library import (
-    # 单比特 Pauli 门
-    IGate,
+    HGate,
     XGate,
     YGate,
     ZGate,
-    # Hadamard 和 Clifford 门
-    HGate,
     SGate,
     SdgGate,
     TGate,
     TdgGate,
-    SXGate,
-    SXdgGate,
-    # 单比特旋转门
     RXGate,
     RYGate,
     RZGate,
-    PhaseGate,
-    U1Gate,
-    U2Gate,
-    U3Gate,
     UGate,
-    RGate,
-    # 两比特旋转门
-    RXXGate,
-    RYYGate,
-    RZZGate,
-    RZXGate,
-    # 两比特门
     CXGate,
-    CYGate,
     CZGate,
-    CHGate,
-    CSGate,
-    CSdgGate,
-    CSXGate,
-    DCXGate,
-    ECRGate,
-    SwapGate,
-    iSwapGate,
-    # 受控旋转门
-    CRXGate,
-    CRYGate,
     CRZGate,
-    CPhaseGate,
-    CU1Gate,
-    CU3Gate,
-    CUGate,
-    # 三比特及多比特门
-    CCXGate,
-    CCZGate,
-    CSwapGate,
-    RCCXGate,
-    RC3XGate,
-    C3XGate,
-    C4XGate,
-    # 特殊两比特门
-    XXMinusYYGate,
-    XXPlusYYGate,
-    # 特殊操作
+    SwapGate,
     Barrier,
     Measure,
     Reset,
     Delay,
-    GlobalPhaseGate,
-    # 多控制门
-    C3SXGate,
-    MCXGate,
-    MCXGrayCode,
-    MCXRecursive,
-    MCXVChain,
-    MCPhaseGate,
-    MCU1Gate,
-    # 多控制旋转门
-    MCRXGate,
-    MCRYGate,
-    MCRZGate,
 )
 
 __all__ = [
     # 核心类
     'Operation',
     'Gate',
-    'ControlledGate',
-    'ClassicalControlledGate',
     'Instruction',
     'Layer',
     'Circuit',
-    'SeperatableCircuit',
+    'QuantumCircuit',  # Alias for Circuit
     'Qubit',
     'QuantumRegister',
     'Clbit',
     'ClassicalRegister',
+    'CircuitInstruction',  # Added
+    'Bit',  # Added
     # 参数化
     'Parameter',
     'ParameterExpression',
-    # 文件读写
-    'save_circuit',
-    'load_circuit',
-    'save_layers',
-    'load_layers',
-    'save_instructions',
-    'load_instructions',
     # DAG
     'DAGCircuit',
     'DAGNode',
@@ -138,90 +79,25 @@ __all__ = [
     'DAGOutNode',
     'circuit_to_dag',
     'dag_to_circuit',
-    # DAGDependency (交换性分析)
-    'DAGDependency',
-    'circuit_to_dag_dependency',
-    'dag_dependency_to_circuit',
-    # 块操作
-    'BlockCollector',
-    'BlockSplitter',
-    'BlockCollapser',
-    'split_block_into_layers',
-    # 单比特 Pauli 门
-    'IGate',
+    # 标准门
+    'HGate',
     'XGate',
     'YGate',
     'ZGate',
-    # Hadamard 和 Clifford 门
-    'HGate',
     'SGate',
     'SdgGate',
     'TGate',
     'TdgGate',
-    'SXGate',
-    'SXdgGate',
-    # 单比特旋转门
     'RXGate',
     'RYGate',
     'RZGate',
-    'PhaseGate',
-    'U1Gate',
-    'U2Gate',
-    'U3Gate',
     'UGate',
-    'RGate',
-    # 两比特旋转门
-    'RXXGate',
-    'RYYGate',
-    'RZZGate',
-    'RZXGate',
-    # 两比特门
     'CXGate',
-    'CYGate',
     'CZGate',
-    'CHGate',
-    'CSGate',
-    'CSdgGate',
-    'CSXGate',
-    'DCXGate',
-    'ECRGate',
-    'SwapGate',
-    'iSwapGate',
-    # 受控旋转门
-    'CRXGate',
-    'CRYGate',
     'CRZGate',
-    'CPhaseGate',
-    'CU1Gate',
-    'CU3Gate',
-    'CUGate',
-    # 三比特及多比特门
-    'CCXGate',
-    'CCZGate',
-    'CSwapGate',
-    'RCCXGate',
-    'RC3XGate',
-    'C3XGate',
-    'C4XGate',
-    # 特殊两比特门
-    'XXMinusYYGate',
-    'XXPlusYYGate',
-    # 特殊操作
+    'SwapGate',
     'Barrier',
     'Measure',
     'Reset',
     'Delay',
-    'GlobalPhaseGate',
-    # 多控制门
-    'C3SXGate',
-    'MCXGate',
-    'MCXGrayCode',
-    'MCXRecursive',
-    'MCXVChain',
-    'MCPhaseGate',
-    'MCU1Gate',
-    # 多控制旋转门
-    'MCRXGate',
-    'MCRYGate',
-    'MCRZGate',
 ]

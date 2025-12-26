@@ -1,10 +1,10 @@
-"""Provides a general transpiler pass for collecting and consolidating blocks of nodes
+﻿"""Provides a general transpiler pass for collecting and consolidating blocks of nodes
 in a circuit."""
 
-from optimize.basepasses import TransformationPass
-from compat.converters import dag_to_dagdependency, dagdependency_to_dag
-from optimize.collect_blocks import BlockCollector, BlockCollapser
-from compat.control_flow_utils import trivial_recurse
+from janus.optimize.basepasses import TransformationPass
+from janus.compat.converters import dag_to_dagdependency, dagdependency_to_dag
+from janus.optimize.collect_blocks import BlockCollector, BlockCollapser
+from janus.compat.control_flow_utils import trivial_recurse
 # STUB: control_flow utils
 
 
@@ -18,9 +18,9 @@ class BlockCollectCollapser(TransformationPass):
     takes a DAG and a list of blocks, consolidates each block, and returns the modified
     DAG.
 
-    The input and the output DAGs are of type :class:`~qiskit.dagcircuit.DAGCircuit`,
+    The input and the output DAGs are of type :class:`~janus.circuit.DAGCircuit`,
     however when exploiting commutativity analysis to collect blocks, the
-    :class:`~qiskit.dagcircuit.DAGDependency` representation is used internally.
+    :class:`~janus.dagcircuit.DAGDependency` representation is used internally.
     To support this, the ``collect_function`` and ``collapse_function`` should work
     with both types of DAGs and DAG nodes.
 

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Control flow utilities stub
 用于处理量子电路中的控制流
 """

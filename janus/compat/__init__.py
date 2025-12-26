@@ -1,9 +1,9 @@
-"""
+﻿"""
 Janus Compatibility Layer
-提供与qiskit兼容的接口,完全独立实现
+提供兼容的接口,完全独立实现
 """
 
-from .exceptions import QiskitError, CircuitError, TranspilerError, DAGCircuitError
+from .exceptions import JanusError, CircuitError, TranspilerError, DAGCircuitError
 from .passmanager import (
     GenericPass,
     AnalysisPass,
@@ -18,7 +18,7 @@ from .quaternion import Quaternion
 
 __all__ = [
     # Exceptions
-    'QiskitError',
+    'JanusError',
     'CircuitError',
     'TranspilerError',
     'DAGCircuitError',

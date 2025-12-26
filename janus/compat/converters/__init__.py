@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2018.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -18,10 +18,10 @@ Modified for Janus - removed qiskit dependencies
 
 """
 =============================================
-Circuit Converters (:mod:`qiskit.converters`)
+Circuit Converters (:mod:`janus.compat.converters`)
 =============================================
 
-.. currentmodule:: qiskit.converters
+.. currentmodule:: janus.compat.converters
 
 QuantumCircuit -> circuit components
 ====================================

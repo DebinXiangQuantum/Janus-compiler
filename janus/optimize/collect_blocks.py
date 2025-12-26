@@ -1,23 +1,23 @@
-"""Various ways to divide a DAG into blocks of nodes, to split blocks of nodes
+﻿"""Various ways to divide a DAG into blocks of nodes, to split blocks of nodes
 into smaller sub-blocks, and to consolidate blocks."""
 from __future__ import annotations
 
 from collections.abc import Iterable, Callable
 
-from circuit import Circuit as QuantumCircuit, CircuitInstruction, ClassicalRegister, Bit
-# FIXME: Remove qiskit import import condition_resources
-from circuit import DAGCircuit
-from compat.dagdependency import DAGDependency
-# FIXME: Remove qiskit import import DAGOpNode
-# FIXME: Remove qiskit import import DAGDepNode
+from janus.circuit import Circuit as QuantumCircuit, CircuitInstruction, ClassicalRegister, Bit
+# Import condition_resources
+from janus.circuit import DAGCircuit
+from janus.compat.dagdependency import DAGDependency
+# Import DAGOpNode
+# Import DAGDepNode
 from .exceptions import DAGCircuitError
 
 
 class BlockCollector:
     """This class implements various strategies of dividing a DAG (direct acyclic graph)
     into blocks of nodes that satisfy certain criteria. It works both with the
-    :class:`~qiskit.dagcircuit.DAGCircuit` and
-    :class:`~qiskit.dagcircuit.DAGDependency` representations of a DAG, where
+    :class:`~janus.circuit.DAGCircuit` and
+    :class:`~janus.dagcircuit.DAGDependency` representations of a DAG, where
     DagDependency takes into account commutativity between nodes.
 
     Collecting nodes from DAGDependency generally leads to more optimal results, but is
@@ -28,7 +28,7 @@ class BlockCollector:
     In general, there are multiple ways to collect maximal blocks. The approaches used
     here are of the form 'starting from the input nodes of a DAG, greedily collect
     the largest block of nodes that match certain criteria'. For additional details,
-    see https://github.com/Qiskit/qiskit-terra/issues/5775.
+    see the block collection algorithm documentation.
     """
 
     def __init__(self, dag: DAGCircuit | DAGDependency):
@@ -327,8 +327,8 @@ def split_block_into_layers(block: list[DAGOpNode | DAGDepNode]):
 class BlockCollapser:
     """This class implements various strategies of consolidating blocks of nodes
     in a DAG (direct acyclic graph). It works both with
-    the :class:`~qiskit.dagcircuit.DAGCircuit`
-    and :class:`~qiskit.dagcircuit.DAGDependency` DAG representations.
+    the :class:`~janus.circuit.DAGCircuit`
+    and :class:`~janus.dagcircuit.DAGDependency` DAG representations.
     """
 
     def __init__(self, dag):

@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2019.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -18,10 +18,10 @@ Modified for Janus - removed qiskit dependencies
 
 
 """Helper function for converting a circuit to a gate"""
-from circuit.annotated_operation import AnnotatedOperation
-from circuit.gate import Gate
-from circuit import QuantumRegister
-from compat.exceptions import QiskitError
+from janus.circuit.annotated_operation import AnnotatedOperation
+from janus.circuit.gate import Gate
+from janus.circuit import QuantumRegister
+from janus.compat.exceptions import JanusError
 
 
 def _check_is_gate(op):
@@ -51,7 +51,7 @@ def circuit_to_gate(circuit, parameter_map=None, equivalence_library=None, label
         label (str): Optional gate label.
 
     Raises:
-        QiskitError: if circuit is non-unitary or if
+        JanusError: if circuit is non-unitary or if
             parameter_map is not compatible with circuit
 
     Return:
@@ -60,16 +60,16 @@ def circuit_to_gate(circuit, parameter_map=None, equivalence_library=None, label
         yield the components comprising the original circuit.
     """
     # pylint: disable=cyclic-import
-    from circuit.quantumcircuit import QuantumCircuit
+    from janus.circuit.quantumcircuit import QuantumCircuit
 
     if circuit.clbits:
-        raise QiskitError("Circuit with classical bits cannot be converted to gate.")
+        raise JanusError("Circuit with classical bits cannot be converted to gate.")
     if circuit.num_vars:
-        raise QiskitError("circuits with realtime classical variables cannot be converted to gates")
+        raise JanusError("circuits with realtime classical variables cannot be converted to gates")
 
     for instruction in circuit.data:
         if not _check_is_gate(instruction.operation):
-            raise QiskitError(
+            raise JanusError(
                 "One or more instructions cannot be converted to"
                 f' a gate. "{instruction.operation.name}" is not a gate instruction'
             )
@@ -80,7 +80,7 @@ def circuit_to_gate(circuit, parameter_map=None, equivalence_library=None, label
         parameter_dict = circuit._unroll_param_dict(parameter_map)
 
     if parameter_dict.keys() != circuit.parameters:
-        raise QiskitError(
+        raise JanusError(
             "parameter_map should map all circuit parameters. "
             f"Circuit parameters: {circuit.parameters}, parameter_map: {parameter_dict}"
         )

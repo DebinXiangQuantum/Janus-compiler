@@ -1,0 +1,31 @@
+{
+    "description": "复杂Clifford门交换和合并优化测试电路",
+    "n_qubits": 3,
+    "gates": [
+        {"gate": "H", "qubits": [0]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "S", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "S", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "S", "qubits": [1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "S", "qubits": [1]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "H", "qubits": [2]},
+        {"gate": "H", "qubits": [2]}
+    ]
+}

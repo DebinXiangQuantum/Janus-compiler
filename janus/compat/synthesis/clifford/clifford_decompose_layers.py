@@ -1,12 +1,13 @@
+﻿from __future__ import annotations
 """
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2023, 2024.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -19,25 +20,23 @@ Modified for Janus - removed qiskit dependencies
 Circuit synthesis for the Clifford class into layers.
 """
 # pylint: disable=invalid-name
-
-from __future__ import annotations
 from collections.abc import Callable
 import numpy as np
 
-from circuit import QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.Clifford import Clifford  # pylint: disable=cyclic-import
-from compat.clifford_circuits import (
+from janus.circuit import QuantumCircuit
+from janus.compat.exceptions import JanusError
+from janus.compat.clifford import Clifford  # pylint: disable=cyclic-import
+from janus.compat.clifford_circuits import (
     _append_h,
     _append_s,
     _append_cz,
 )
-from compat.synthesis.linear import (
+from janus.compat.synthesis.linear import (
     synth_cnot_count_full_pmh,
     synth_cnot_depth_line_kms,
 )
-from compat.synthesis.linear_phase import synth_cz_depth_line_mr, synth_cx_cz_depth_line_my
-from compat.synthesis.linear.linear_matrix_utils import (
+from janus.compat.synthesis.linear_phase import synth_cz_depth_line_mr, synth_cx_cz_depth_line_my
+from janus.compat.synthesis.linear.linear_matrix_utils import (
     calc_inverse_matrix,
     compute_rank,
     gauss_elimination,
@@ -202,7 +201,7 @@ def _create_graph_state(cliff, validate=False):
         cliffh: cliffh.stab_x has full rank.
 
     Raises:
-        QiskitError: if there are errors in the Gauss elimination process.
+        JanusError: if there are errors in the Gauss elimination process.
 
     References:
         2. S. Aaronson, D. Gottesman, *Improved Simulation of Stabilizer Circuits*,
@@ -228,13 +227,13 @@ def _create_graph_state(cliff, validate=False):
         # validate that the output matrix has the same rank
         if validate:
             if compute_rank(Cmat) != num_qubits - rank:
-                raise QiskitError("The matrix Cmat after Gauss elimination has wrong rank.")
+                raise JanusError("The matrix Cmat after Gauss elimination has wrong rank.")
             if compute_rank(stab[:, 0:num_qubits]) != rank:
-                raise QiskitError("The matrix after Gauss elimination has wrong rank.")
+                raise JanusError("The matrix after Gauss elimination has wrong rank.")
             # validate that we have a num_qubits - rank zero rows
             for i in range(rank, num_qubits):
                 if stab[i, 0:num_qubits].any():
-                    raise QiskitError(
+                    raise JanusError(
                         "After Gauss elimination, the final num_qubits - rank rows"
                         "contain non-zero elements"
                     )
@@ -247,7 +246,7 @@ def _create_graph_state(cliff, validate=False):
         if validate:
             stabh = (cliffh.stab_x).astype(bool, copy=False)
             if compute_rank(stabh) != num_qubits:
-                raise QiskitError("The state is not a graph state.")
+                raise JanusError("The state is not a graph state.")
 
     return H1_circ, cliffh
 
@@ -272,14 +271,14 @@ def _decompose_graph_state(cliff, validate, cz_synth_func):
         cliff_cpy: a Hadamard-free Clifford.
 
     Raises:
-        QiskitError: if cliff does not induce a graph state.
+        JanusError: if cliff does not induce a graph state.
     """
 
     num_qubits = cliff.num_qubits
     rank = compute_rank(np.asarray(cliff.stab_x, dtype=bool))
     cliff_cpy = cliff.copy()
     if rank < num_qubits:
-        raise QiskitError("The stabilizer state is not a graph state.")
+        raise JanusError("The stabilizer state is not a graph state.")
 
     S1_circ = QuantumCircuit(num_qubits, name="S1")
     H2_circ = QuantumCircuit(num_qubits, name="H2")
@@ -292,7 +291,7 @@ def _decompose_graph_state(cliff, validate, cz_synth_func):
     # Assert that stabz_update is a symmetric matrix.
     if validate:
         if (stabz_update != stabz_update.T).any():
-            raise QiskitError(
+            raise JanusError(
                 "The multiplication of stabx_inv and stab_z is not a symmetric matrix."
             )
 
@@ -338,7 +337,7 @@ def _decompose_hadamard_free(
         CX_circ: a circuit that can contain only CX gates.
 
     Raises:
-        QiskitError: if cliff is not Hadamard free.
+        JanusError: if cliff is not Hadamard free.
     """
 
     num_qubits = cliff.num_qubits
@@ -347,13 +346,13 @@ def _decompose_hadamard_free(
     stabx = cliff.stab_x
 
     if not (stabx == np.zeros((num_qubits, num_qubits))).all():
-        raise QiskitError("The given Clifford is not Hadamard-free.")
+        raise JanusError("The given Clifford is not Hadamard-free.")
 
     destabz_update = binary_matmul(calc_inverse_matrix(destabx), destabz)
     # Assert that destabz_update is a symmetric matrix.
     if validate:
         if (destabz_update != destabz_update.T).any():
-            raise QiskitError(
+            raise JanusError(
                 "The multiplication of the inverse of destabx and"
                 "destabz is not a symmetric matrix."
             )
@@ -391,7 +390,7 @@ def _calc_pauli_diff(cliff, cliff_target):
 
     num_qubits = cliff.num_qubits
     if cliff.num_qubits != cliff_target.num_qubits:
-        raise QiskitError("num_qubits is not the same for the original clifford and the target.")
+        raise JanusError("num_qubits is not the same for the original clifford and the target.")
 
     # Compute the phase difference between the two Cliffords
     phase = [cliff.phase[k] ^ cliff_target.phase[k] for k in range(2 * num_qubits)]

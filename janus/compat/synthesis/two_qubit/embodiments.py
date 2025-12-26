@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2022
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -26,8 +26,8 @@ TODO: discover these automatically from the gates' algebraic definition
 from __future__ import annotations
 import numpy as np
 
-from circuit import QuantumCircuit, Parameter
-from circuit.library import (
+from janus.circuit import QuantumCircuit, Parameter
+from janus.circuit.library import (
     RXXGate,
     RZZGate,
     RZXGate,

@@ -1,6 +1,6 @@
-"""Calculate the size of a DAG circuit."""
+﻿"""Calculate the size of a DAG circuit."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class CircuitSizeAnalyzer(AnalysisPass):

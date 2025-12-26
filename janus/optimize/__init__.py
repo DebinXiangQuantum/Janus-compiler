@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """
 Janus Optimize Module - Quantum Circuit Optimization and Synthesis
 
@@ -22,15 +22,15 @@ techniques and synthesis algorithms. It implements 10 optimization technologies:
 - Technology 10: Auto-selection (to be implemented)
 
 **Usage:**
-    from optimize import TChinMerger, CliffordMerger
-    from optimize.synthesis import synthesize_clifford_circuit
-    from optimize.passes.analysis import Depth, CountOps
+    from janus.optimize import TChinMerger, CliffordMerger
+    from janus.optimize.synthesis import synthesize_clifford_circuit
+    from janus.optimize.passes.analysis import Depth, CountOps
 
 **Architecture:**
-This module uses a hybrid dependency strategy:
+This module provides quantum circuit optimization functionality:
 - Core functionality is implemented in the optimize namespace
-- Infrastructure components (QuantumCircuit, DAGCircuit, etc.) are imported from qiskit
-- Rust-accelerated functions use qiskit._accelerate for performance
+- Infrastructure components (QuantumCircuit, DAGCircuit, etc.) are imported from janus
+- Performance-critical functions use optimized implementations
 """
 
 # === Optimization Passes (Technologies 1-4) ===
@@ -147,6 +147,29 @@ from .passes.analysis import (
     DAGLongestPathAnalyzer,
 )
 
+# === Technology 10: Smart Optimizer ===
+
+from .smart_optimizer import (
+    SmartOptimizer,
+    smart_compile,
+    analyze_and_optimize,
+)
+
+# === Unified API (统一接口) ===
+
+from .unified_api import (
+    optimize_clifford_rz,      # 技术1: Clifford+RZ优化
+    optimize_gate_fusion,      # 技术2: 门融合优化
+    optimize_commutativity,    # 技术3: 交换性优化
+    optimize_template,         # 技术4: 模板匹配优化
+    optimize_kak,              # 技术5: KAK分解优化
+    optimize_clifford_synth,   # 技术6: Clifford合成优化
+    optimize_cnot_synth,       # 技术7: CNOT合成优化
+    run_benchmark,             # 技术8: 基准测试
+    analyze_circuit,           # 技术9: 电路分析
+    smart_optimize,            # 技术10: 智能优化
+)
+
 # === Base Classes ===
 
 from .basepasses import TransformationPass, AnalysisPass
@@ -241,6 +264,21 @@ __all__ = [
     "TensorFactorCounter",
     "DAGLongestPath",
     "DAGLongestPathAnalyzer",
+    # Technology 10 (Smart Optimizer)
+    "SmartOptimizer",
+    "smart_compile",
+    "analyze_and_optimize",
+    # Unified API (统一接口)
+    "optimize_clifford_rz",
+    "optimize_gate_fusion",
+    "optimize_commutativity",
+    "optimize_template",
+    "optimize_kak",
+    "optimize_clifford_synth",
+    "optimize_cnot_synth",
+    "run_benchmark",
+    "analyze_circuit",
+    "smart_optimize",
     # Base classes
     "TransformationPass",
     "AnalysisPass",

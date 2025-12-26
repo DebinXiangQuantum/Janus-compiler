@@ -1,6 +1,6 @@
-"""Collect sequences of uninterrupted gates acting on 1 qubit."""
+﻿"""Collect sequences of uninterrupted gates acting on 1 qubit."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class SingleQubitRunCollector(AnalysisPass):

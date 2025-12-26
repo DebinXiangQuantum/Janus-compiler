@@ -1,4 +1,4 @@
-"""
+﻿"""
 Commutation checker for quantum gates - Stub implementation
 
 This is a simplified stub implementation for the CommutationChecker class,

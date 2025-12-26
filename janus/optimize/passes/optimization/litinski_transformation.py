@@ -1,8 +1,8 @@
-"""Move clifford gates to the end of the circuit, changing rotation gates to multi-qubit rotations."""
+﻿"""Move clifford gates to the end of the circuit, changing rotation gates to multi-qubit rotations."""
 
-from optimize.basepasses import TransformationPass
-from circuit import DAGCircuit
-# FIXME: from # FIXME: qiskit._accelerate.litinski_transformation import run_litinski_transformation
+from janus.optimize.basepasses import TransformationPass
+from janus.circuit import DAGCircuit
+# Accelerated implementation.litinski_transformation import run_litinski_transformation
 
 
 class CliffordRzTransform(TransformationPass):

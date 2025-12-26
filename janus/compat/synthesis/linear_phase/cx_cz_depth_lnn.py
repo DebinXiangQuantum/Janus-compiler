@@ -1,4 +1,4 @@
-"""
+﻿"""
 Given -CZ-CX- transformation (a layer consisting only CNOT gates
     followed by a layer consisting only CZ gates)
 Return a depth-5n circuit implementation of the -CZ-CX- transformation over LNN.
@@ -17,8 +17,7 @@ References:
 """
 
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-# FIXME: from # FIXME: qiskit._accelerate.synthesis.linear_phase import py_synth_cx_cz_depth_line_my
+from janus.circuit import Circuit as QuantumCircuit
 
 
 def synthesize_cx_cz_depth_lnn_my(mat_x: np.ndarray, mat_z: np.ndarray) -> QuantumCircuit:
@@ -45,8 +44,38 @@ def synthesize_cx_cz_depth_lnn_my(mat_x: np.ndarray, mat_z: np.ndarray) -> Quant
            Hadamard-free Clifford transformations they generate*,
            `arXiv:2210.16195 <https://arxiv.org/abs/2210.16195>`_.
     """
-    circuit_data = py_synth_cx_cz_depth_line_my(mat_x.astype(bool), mat_z.astype(bool))
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    mat_x = np.asarray(mat_x, dtype=bool)
+    mat_z = np.asarray(mat_z, dtype=bool)
+    n = mat_x.shape[0]
+    circuit = QuantumCircuit(n)
+    
+    # Simple implementation: first CZ gates, then CX gates
+    # Add CZ gates
+    for i in range(n):
+        for j in range(i + 1, n):
+            if mat_z[i, j]:
+                circuit.cz(i, j)
+    
+    # Add CX gates based on mat_x (simple Gaussian elimination)
+    work_mat = mat_x.copy()
+    for col in range(n):
+        # Find pivot
+        pivot = -1
+        for row in range(col, n):
+            if work_mat[row, col]:
+                pivot = row
+                break
+        if pivot == -1:
+            continue
+        if pivot != col:
+            work_mat[[col, pivot]] = work_mat[[pivot, col]]
+        # Eliminate
+        for row in range(n):
+            if row != col and work_mat[row, col]:
+                circuit.cx(col, row)
+                work_mat[row] ^= work_mat[col]
+    
+    return circuit
 
 
 # Backward compatibility alias

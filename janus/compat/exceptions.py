@@ -1,6 +1,6 @@
-"""
-异常类定义 - 兼容qiskit接口
-完全独立实现,不依赖qiskit
+﻿"""
+异常类定义
+完全独立实现
 """
 
 
@@ -9,26 +9,31 @@ class JanusError(Exception):
     pass
 
 
-class QiskitError(JanusError):
-    """Qiskit兼容的通用错误"""
-    pass
-
-
-class CircuitError(QiskitError):
+class CircuitError(JanusError):
     """电路相关错误"""
     pass
 
 
-class TranspilerError(QiskitError):
+class TranspilerError(JanusError):
     """转译器相关错误"""
     pass
 
 
-class DAGCircuitError(QiskitError):
+class DAGCircuitError(JanusError):
     """DAG电路相关错误"""
     pass
 
 
 class OptimizationError(TranspilerError):
     """优化相关错误"""
+    pass
+
+
+class SynthesisError(JanusError):
+    """合成相关错误"""
+    pass
+
+
+class DecompositionError(JanusError):
+    """分解相关错误"""
     pass

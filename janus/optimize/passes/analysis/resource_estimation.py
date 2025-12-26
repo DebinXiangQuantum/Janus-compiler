@@ -1,12 +1,12 @@
-"""Automatically require analysis passes for resource estimation."""
+﻿"""Automatically require analysis passes for resource estimation."""
 
-from optimize.basepasses import AnalysisPass
-from optimize.passes.analysis.depth import Depth
-from optimize.passes.analysis.width import Width
-from optimize.passes.analysis.size import Size
-from optimize.passes.analysis.count_ops import CountOps
-from optimize.passes.analysis.num_tensor_factors import NumTensorFactors
-from optimize.passes.analysis.num_qubits import NumQubits
+from janus.optimize.basepasses import AnalysisPass
+from janus.optimize.passes.analysis.depth import Depth
+from janus.optimize.passes.analysis.width import Width
+from janus.optimize.passes.analysis.size import Size
+from janus.optimize.passes.analysis.count_ops import CountOps
+from janus.optimize.passes.analysis.num_tensor_factors import NumTensorFactors
+from janus.optimize.passes.analysis.num_qubits import NumQubits
 
 
 class CircuitResourceAnalyzer(AnalysisPass):

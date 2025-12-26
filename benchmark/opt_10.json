@@ -1,0 +1,31 @@
+{
+    "description": "量子资源估计与评估测试电路",
+    "n_qubits": 6,
+    "gates": [
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "H", "qubits": [2]},
+        {"gate": "H", "qubits": [3]},
+        {"gate": "H", "qubits": [4]},
+        {"gate": "H", "qubits": [5]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "CX", "qubits": [2, 3]},
+        {"gate": "CX", "qubits": [4, 5]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "S", "qubits": [2]},
+        {"gate": "S", "qubits": [3]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "CX", "qubits": [3, 4]},
+        {"gate": "RZ", "qubits": [0], "params": [0.785]},
+        {"gate": "RZ", "qubits": [1], "params": [0.393]},
+        {"gate": "CX", "qubits": [0, 5]},
+        {"gate": "T", "qubits": [5]},
+        {"gate": "Tdg", "qubits": [5]},
+        {"gate": "H", "qubits": [5]}
+    ]
+}

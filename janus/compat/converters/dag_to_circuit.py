@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2018.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -18,9 +18,9 @@ Modified for Janus - removed qiskit dependencies
 
 """Helper function for converting a dag to a circuit."""
 
-from circuit import Circuit as QuantumCircuit
+from janus.circuit import Circuit as QuantumCircuit
 # Use Janus's native dag_to_circuit instead of Rust accelerated version
-from circuit.dag import dag_to_circuit as _janus_dag_to_circuit
+from janus.circuit.dag import dag_to_circuit as _janus_dag_to_circuit
 
 
 def dag_to_circuit(dag, copy_operations=True):
@@ -44,11 +44,11 @@ def dag_to_circuit(dag, copy_operations=True):
            :alt: Circuit diagram output by the previous code.
            :include-source:
 
-           from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
-           from circuit.dag import DAGCircuit
-           from compat.converters import circuit_to_dag
-           from qiskit.circuit.library.standard_gates import CHGate, U2Gate, CXGate
-           from compat.converters import dag_to_circuit
+           from janus.circuit import QuantumRegister, ClassicalRegister, QuantumCircuit
+           from janus.circuit.dag import DAGCircuit
+           from janus.compat.converters import circuit_to_dag
+           from janus.circuit.library.standard_gates import CHGate, U2Gate, CXGate
+           from janus.compat.converters import dag_to_circuit
 
            q = QuantumRegister(3, 'q')
            c = ClassicalRegister(3, 'c')

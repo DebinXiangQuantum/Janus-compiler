@@ -1,6 +1,6 @@
-"""
+﻿"""
 PassManager相关基础类
-完全独立实现,不依赖qiskit
+完全独立实现
 """
 
 from typing import Dict, Any, Optional

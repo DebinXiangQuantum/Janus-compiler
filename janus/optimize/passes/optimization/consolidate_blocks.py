@@ -1,8 +1,8 @@
-"""Replace each block of consecutive gates by a single Unitary node."""
+﻿"""Replace each block of consecutive gates by a single Unitary node."""
 from __future__ import annotations
 
-from compat.synthesis.two_qubit import TwoQubitBasisDecomposer, TwoQubitControlledUDecomposer
-from circuit.library import (
+from janus.compat.synthesis.two_qubit import TwoQubitBasisDecomposer, TwoQubitControlledUDecomposer
+from janus.circuit.library import (
     CXGate,
     CZGate,
     iSwapGate,
@@ -17,9 +17,9 @@ from circuit.library import (
     CPhaseGate,
 )
 
-from optimize.basepasses import TransformationPass
-from optimize.passmanager import PassManager
-# FIXME: from # FIXME: qiskit._accelerate.consolidate_blocks import consolidate_blocks
+from janus.optimize.basepasses import TransformationPass
+from janus.optimize.passmanager import PassManager
+# Accelerated implementation.consolidate_blocks import consolidate_blocks
 # Python stub implementation
 def consolidate_blocks(dag, decomposer, basis_gate_name, force_consolidate=False,
                       target=None, basis_gates=None, blocks=None, runs=None, qubit_map=None):
@@ -143,7 +143,7 @@ class BlockConsolidator(TransformationPass):
         # 如果property_set中没有block_list，自动收集
         if "block_list" not in self.property_set:
             # 自动收集2量子比特块
-            from optimize.passes.optimization.collect_2q_blocks import TwoQubitBlockCollector
+            from janus.optimize.passes.optimization.collect_2q_blocks import TwoQubitBlockCollector
             collector = TwoQubitBlockCollector()
             # 共享property_set
             collector.property_set = self.property_set

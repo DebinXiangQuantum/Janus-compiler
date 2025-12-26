@@ -1,0 +1,25 @@
+{
+    "description": "量子门交换性优化测试电路",
+    "n_qubits": 4,
+    "gates": [
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "X", "qubits": [1]},
+        {"gate": "X", "qubits": [1]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "T", "qubits": [2]},
+        {"gate": "Tdg", "qubits": [2]},
+        {"gate": "S", "qubits": [3]},
+        {"gate": "Sdg", "qubits": [3]},
+        {"gate": "H", "qubits": [2]},
+        {"gate": "CX", "qubits": [2, 3]},
+        {"gate": "H", "qubits": [2]},
+        {"gate": "CX", "qubits": [2, 3]},
+        {"gate": "CX", "qubits": [2, 3]},
+        {"gate": "Y", "qubits": [0]},
+        {"gate": "Y", "qubits": [0]},
+        {"gate": "Z", "qubits": [1]},
+        {"gate": "Z", "qubits": [1]}
+    ]
+}

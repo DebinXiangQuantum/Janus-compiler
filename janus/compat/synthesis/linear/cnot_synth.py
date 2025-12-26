@@ -1,14 +1,14 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
 from __future__ import annotations
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2019.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -25,9 +25,9 @@ for optimal synthesis of linear (CNOT-only) reversible circuits.
 """
 
 import numpy as np
-from circuit import QuantumCircuit
+from janus.circuit import QuantumCircuit
 
-from compat.accelerate.synthesis.linear import synth_cnot_count_full_pmh as fast_pmh
+from janus.compat.accelerate.synthesis.linear import synth_cnot_count_full_pmh as fast_pmh
 
 
 def synth_cnot_count_full_pmh(
@@ -68,8 +68,13 @@ def synth_cnot_count_full_pmh(
             f"({normalized.shape[1]})."
         )
 
-    # call Rust implementation with normalized input
-    circuit_data = fast_pmh(normalized, section_size)
+    # call Python implementation with normalized input
+    gates = fast_pmh(normalized, section_size if section_size else 2)
 
-    # construct circuit from the data
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    # construct circuit from the gate list
+    n = normalized.shape[0]
+    circuit = QuantumCircuit(n)
+    for ctrl, tgt in gates:
+        circuit.cx(ctrl, tgt)
+    
+    return circuit

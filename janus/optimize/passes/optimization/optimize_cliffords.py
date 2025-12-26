@@ -1,9 +1,9 @@
-"""Combine consecutive Cliffords over the same qubits."""
+﻿"""Combine consecutive Cliffords over the same qubits."""
 
-from optimize.basepasses import TransformationPass
+from janus.optimize.basepasses import TransformationPass
 # STUB: control_flow utils
-from compat.clifford import Clifford
-from compat.control_flow_utils import trivial_recurse
+from janus.compat.clifford import Clifford
+from janus.compat.control_flow_utils import trivial_recurse
 
 
 class CliffordMerger(TransformationPass):

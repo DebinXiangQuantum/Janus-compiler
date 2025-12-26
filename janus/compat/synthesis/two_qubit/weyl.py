@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2021
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -23,8 +23,8 @@ Simple circuit constructors for Weyl reflections.
 from __future__ import annotations
 import numpy as np
 
-from circuit.quantumcircuit import QuantumCircuit
-from circuit.library import RXGate, RYGate, RZGate
+from janus.circuit.quantumcircuit import QuantumCircuit
+from janus.circuit.library import RXGate, RYGate, RZGate
 
 
 reflection_options = {

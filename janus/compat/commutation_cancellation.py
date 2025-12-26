@@ -1,4 +1,4 @@
-"""
+﻿"""
 Commutation-based gate cancellation - Basic implementation
 
 This implements basic gate cancellation functionality that can eliminate

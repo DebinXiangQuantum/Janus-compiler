@@ -1,8 +1,8 @@
-"""Utility functions for handling binary matrices."""
+﻿"""Utility functions for handling binary matrices."""
 
 # pylint: disable=unused-import
-# Import from qiskit._accelerate.synthesis.linear which has Python implementations
-from qiskit._accelerate.synthesis.linear import (
+# Import from janus.compat.accelerate.synthesis.linear which has pure Python implementations
+from janus.compat.accelerate.synthesis.linear import (
     gauss_elimination,
     gauss_elimination_with_perm,
     compute_rank_after_gauss_elim,

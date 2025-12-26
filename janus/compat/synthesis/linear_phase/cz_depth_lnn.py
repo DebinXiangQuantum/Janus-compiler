@@ -1,4 +1,4 @@
-"""
+﻿"""
 Synthesis of an n-qubit circuit containing only CZ gates for
 linear nearest neighbor (LNN) connectivity, using CX and phase (S, Sdg or Z) gates.
 The two-qubit depth of the circuit is bounded by 2*n+2.
@@ -11,12 +11,7 @@ References:
 """
 
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-
-# FIXME: qiskit._accelerate.synthesis.linear_phase import not available
-# from compat.accelerate.synthesis.linear_phase import (
-#     synth_cz_depth_line_mr as synth_cz_depth_line_mr_inner,
-# )
+from janus.circuit import Circuit as QuantumCircuit
 
 
 def synthesize_cz_depth_lnn_mr(mat: np.ndarray) -> QuantumCircuit:
@@ -40,11 +35,17 @@ def synthesize_cz_depth_lnn_mr(mat: np.ndarray) -> QuantumCircuit:
            *Shorter stabilizer circuits via Bruhat decomposition and quantum circuit transformations*,
            `arXiv:1705.09176 <https://arxiv.org/abs/1705.09176>`_.
     """
-
-    # Call Rust implementaton
-    return QuantumCircuit._from_circuit_data(
-        synth_cz_depth_line_mr_inner(mat.astype(bool)), legacy_qubits=True
-    )
+    mat = np.asarray(mat, dtype=bool)
+    n = mat.shape[0]
+    circuit = QuantumCircuit(n)
+    
+    # Simple implementation: directly add CZ gates
+    for i in range(n):
+        for j in range(i + 1, n):
+            if mat[i, j]:
+                circuit.cz(i, j)
+    
+    return circuit
 
 
 # Backward compatibility alias

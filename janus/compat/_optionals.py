@@ -1,4 +1,4 @@
-"""Optionals module - stub for optional dependencies checking"""
+﻿"""Optionals module - stub for optional dependencies checking"""
 
 
 class OptionalDependencyChecker:

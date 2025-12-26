@@ -1,4 +1,4 @@
-"""
+﻿"""
 Circuit synthesis for the Clifford class.
 """
 
@@ -6,13 +6,11 @@ Circuit synthesis for the Clifford class.
 # Synthesis based on Bravyi et. al. greedy clifford compiler
 # ---------------------------------------------------------------------
 
-from circuit import Circuit as QuantumCircuit
-from compat.clifford import Clifford
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
 
-# Import from qiskit._accelerate.synthesis.clifford
-from qiskit._accelerate.synthesis.clifford import (
-    synth_clifford_greedy_inner,
-)
+# Import pure Python implementation from janus.compat.accelerate
+from janus.compat.accelerate.synthesis.clifford import synth_clifford_greedy as synth_clifford_greedy_inner
 
 
 def synthesize_clifford_greedy(clifford: Clifford) -> QuantumCircuit:
@@ -33,18 +31,38 @@ def synthesize_clifford_greedy(clifford: Clifford) -> QuantumCircuit:
         A circuit implementation of the Clifford.
 
     Raises:
-        QiskitError: if symplectic Gaussian elimination fails.
+        JanusError: if symplectic Gaussian elimination fails.
 
     References:
         1. Sergey Bravyi, Shaohan Hu, Dmitri Maslov, Ruslan Shaydulin,
            *Clifford Circuit Optimization with Templates and Symbolic Pauli Gates*,
            `arXiv:2105.02291 [quant-ph] <https://arxiv.org/abs/2105.02291>`_
     """
-    circuit = QuantumCircuit._from_circuit_data(
-        synth_clifford_greedy_inner(clifford.tableau.astype(bool)),
-        legacy_qubits=True,
-        name=str(clifford),
-    )
+    # Use pure Python greedy synthesis
+    gates = synth_clifford_greedy_inner(clifford.tableau.astype(bool))
+    
+    # Build circuit from gate list
+    num_qubits = clifford.num_qubits
+    circuit = QuantumCircuit(num_qubits)
+    
+    for gate_name, qubits in gates:
+        if gate_name == 'h':
+            circuit.h(qubits[0])
+        elif gate_name == 's':
+            circuit.s(qubits[0])
+        elif gate_name == 'sdg':
+            circuit.sdg(qubits[0])
+        elif gate_name == 'cx':
+            circuit.cx(qubits[0], qubits[1])
+        elif gate_name == 'cz':
+            circuit.cz(qubits[0], qubits[1])
+        elif gate_name == 'x':
+            circuit.x(qubits[0])
+        elif gate_name == 'y':
+            circuit.y(qubits[0])
+        elif gate_name == 'z':
+            circuit.z(qubits[0])
+    
     return circuit
 
 

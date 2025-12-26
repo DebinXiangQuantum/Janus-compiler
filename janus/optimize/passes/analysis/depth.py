@@ -1,6 +1,6 @@
-"""Calculate the depth of a DAG circuit."""
+﻿"""Calculate the depth of a DAG circuit."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class CircuitDepthAnalyzer(AnalysisPass):
