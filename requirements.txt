@@ -1,6 +1,4 @@
 
-# 基于 Janus-compiler 中的 Qiskit 模块运行所需的依赖包
-
 # 核心依赖
 numpy>=1.16.0
 rustworkx>=0.12.0

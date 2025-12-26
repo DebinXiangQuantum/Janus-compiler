@@ -1816,7 +1816,7 @@ class Circuit:
             return seg
 
         def _pi_check(val: float, short: bool = False) -> str:
-            """将数值转换为 π 表示形式（参考 Qiskit pi_check）
+            """将数值转换为 π 表示形式
             
             Args:
                 val: 数值
@@ -2306,7 +2306,6 @@ class Circuit:
                 rows[r_mid(q)] += "".join(segs_mid[q])
                 rows[r_bot(q)] += "".join(segs_bot[q])
 
-        # 处理折叠（参考 Qiskit 的分页方案）
         n_layers = len(self.layers)
         layer_width = cell_w  # 每层的字符宽度
         
