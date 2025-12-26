@@ -1,0 +1,24 @@
+[
+  [
+    {
+      "name": "h",
+      "qubits": [0],
+      "params": []
+    },
+    {
+      "name": "cx",
+      "qubits": [0, 199],
+      "params": []
+    },
+    {
+      "name": "rz",
+      "qubits": [50],
+      "params": [1.5707963267948966]
+    },
+    {
+      "name": "cz",
+      "qubits": [25, 75],
+      "params": []
+    }
+  ]
+]
