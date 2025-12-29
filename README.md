@@ -115,7 +115,7 @@ save_circuit(qc, 'my_circuit.json')
 
 ## 📚 文档
 
-完整文档请访问：[https://janus-quantum.readthedocs.io](https://janus-quantum.readthedocs.io)
+完整文档请访问：[https://janus-quantum.readthedocs.io/zh-cn/latest/](https://janus-quantum.readthedocs.io/zh-cn/latest/)
 
 ## 🔧 支持的量子门
 

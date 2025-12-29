@@ -9,10 +9,13 @@ description = "轻量级量子电路构建、模拟和编译框架"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Janus Team", email = "janus@example.com"}
+    {name = "Debin Xiang", email = "db.xiang@zju.edu.cn"},
+    {name = "Ayyya2001", email = "ayyya2001@zju.edu.cn"},
+    {name = "YuSen Zheng", email = "zyszju@zju.edu.cn"},
+    {name = "guyueguangze", email = "2581504687@qq.com"}
 ]
 maintainers = [
-    {name = "Janus Team", email = "janus@example.com"}
+    {name = "Janus Team", email = "db.xiang@zju.edu.cn"}
 ]
 keywords = [
     "quantum",
