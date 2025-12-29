@@ -1,4 +1,4 @@
-"""
+﻿"""
 Janus 经典比特定义
 """
 from typing import Optional, List

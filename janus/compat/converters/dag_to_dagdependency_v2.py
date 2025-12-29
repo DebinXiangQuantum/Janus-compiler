@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2020.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -17,7 +17,7 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a dag circuit to a dag dependency"""
-from compat.dagdependency import DAGDependency as _DAGDependencyV2  # Simplified
+from janus.compat.dagdependency import DAGDependency as _DAGDependencyV2  # Simplified
 
 
 def _dag_to_dagdependency_v2(dag):

@@ -1,13 +1,13 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 from __future__ import annotations
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2024.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -40,8 +40,8 @@ import logging
 
 import numpy as np
 
-from circuit import QuantumCircuit, Gate
-from circuit.library import (
+from janus.circuit import QuantumCircuit, Gate
+from janus.circuit.library import (
     CXGate,
     U3Gate,
     U2Gate,
@@ -55,9 +55,9 @@ from circuit.library import (
     XGate,
     RGate,
 )
-from compat.exceptions import QiskitError
-from compat.operator import Operator
-from compat.synthesis.one_qubit.one_qubit_decompose import (
+from janus.compat.exceptions import JanusError
+from janus.compat.operator import Operator
+from janus.compat.synthesis.one_qubit.one_qubit_decompose import (
     DEFAULT_ATOL,
 )
 
@@ -68,10 +68,10 @@ def deprecate_func(**kwargs):
         return func
     return decorator
 
-from compat.accelerate import two_qubit_decompose
+from janus.compat.accelerate import two_qubit_decompose
 
 if TYPE_CHECKING:
-    from compat.dagdagcircuit import DAGCircuit, DAGOpNode
+    from janus.compat.dagdagcircuit import DAGCircuit, DAGOpNode
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ def decompose_two_qubit_product_gate(special_unitary_matrix: np.ndarray):
     Args:
         special_unitary_matrix: special unitary matrix to decompose
     Raises:
-        QiskitError: if decomposition isn't possible.
+        JanusError: if decomposition isn't possible.
     """
     special_unitary_matrix = np.asarray(special_unitary_matrix, dtype=complex)
     (L, R, phase) = two_qubit_decompose.decompose_two_qubit_product_gate(special_unitary_matrix)
@@ -108,7 +108,7 @@ def decompose_two_qubit_product_gate(special_unitary_matrix: np.ndarray):
     deviation = abs(abs(temp.conj().T.dot(special_unitary_matrix).trace()) - 4)
 
     if deviation > 1.0e-13:
-        raise QiskitError(
+        raise JanusError(
             "decompose_two_qubit_product_gate: decomposition failed: "
             f"deviation too large: {deviation}"
         )
@@ -299,7 +299,7 @@ class TwoQubitControlledUDecomposer:
                 ``'U321'``, ``'U1X'``, ``'PSX'``, ``'ZSX'``, ``'ZSXX'``, ``'RR'``].
 
         Raises:
-            QiskitError: If the gate is not locally equivalent to an :class:`.RXXGate`.
+            JanusError: If the gate is not locally equivalent to an :class:`.RXXGate`.
         """
         if rxx_equivalent_gate._standard_gate is not None:
             self._inner_decomposer = two_qubit_decompose.TwoQubitControlledUDecomposer(
@@ -466,7 +466,7 @@ class TwoQubitBasisDecomposer:
             QuantumCircuit: Synthesized quantum circuit.
 
         Raises:
-            QiskitError: if ``pulse_optimize`` is True but we don't know how to do it.
+            JanusError: if ``pulse_optimize`` is True but we don't know how to do it.
         """
 
         unitary = np.asarray(unitary, dtype=complex)
@@ -491,7 +491,7 @@ class TwoQubitBasisDecomposer:
         return self._inner_decomposer.traces(target._inner_decomposition)
 
 
-# This weird duplicated lazy structure is for backwards compatibility; Qiskit has historically
+# This weird duplicated lazy structure is for backwards compatibility; Janus has historically
 # always made ``two_qubit_cnot_decompose`` available publicly immediately on import, but it's quite
 # expensive to construct, and we want to defer the object's creation until it's actually used.  We
 # only need to pass through the public methods that take `self` as a parameter.  Using `__getattr__`

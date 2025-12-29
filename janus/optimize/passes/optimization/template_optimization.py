@@ -1,4 +1,4 @@
-"""
+﻿"""
 Given a template and a circuit: it applies template matching and substitutes
 all compatible maximal matches that reduces the size of the circuit.
 
@@ -10,23 +10,41 @@ Exact and practical pattern matching for quantum circuit optimization.
 """
 import numpy as np
 
-from circuit import Circuit as QuantumCircuit
-# FIXME: Remove qiskit import import DAGDependency
-from compat.dagdependency import DAGDependency
-from compat.converters.circuit_to_dagdependency import circuit_to_dagdependency
-from compat.converters.dagdependency_to_circuit import dagdependency_to_circuit
-from compat.converters.dag_to_dagdependency import dag_to_dagdependency
-from compat.converters.dagdependency_to_dag import dagdependency_to_dag
-from optimize.basepasses import TransformationPass
-# FIXME: Remove qiskit import import template_nct_2a_1, template_nct_2a_2, template_nct_2a_3
-from compat.operator import Operator
-from compat.exceptions import TranspilerError
-from optimize.passes.optimization.template_matching import (
+from janus.circuit import Circuit as QuantumCircuit
+# Import DAGDependency
+from janus.compat.dagdependency import DAGDependency
+from janus.compat.converters.circuit_to_dagdependency import circuit_to_dagdependency
+from janus.compat.converters.dagdependency_to_circuit import dagdependency_to_circuit
+from janus.compat.converters.dag_to_dagdependency import dag_to_dagdependency
+from janus.compat.converters.dagdependency_to_dag import dagdependency_to_dag
+from janus.optimize.basepasses import TransformationPass
+# Import template_nct_2a_1, template_nct_2a_2, template_nct_2a_3
+from janus.compat.operator import Operator
+from janus.compat.exceptions import TranspilerError
+from janus.optimize.passes.optimization.template_matching import (
     TemplateMatching,
     TemplateSubstitution,
     MaximalMatches,
 )
 
+# Import QuantumCircuit for type checking
+try:
+    # Try to import external QuantumCircuit for compatibility
+    ExternalQuantumCircuit = None
+except ImportError:
+    ExternalQuantumCircuit = None
+
+
+def _is_quantum_circuit(obj):
+    """Check if object is a quantum circuit."""
+    if isinstance(obj, QuantumCircuit):
+        return True
+    if ExternalQuantumCircuit is not None and isinstance(obj, ExternalQuantumCircuit):
+        return True
+    # Duck typing: check for circuit-like attributes
+    if hasattr(obj, 'qubits') and hasattr(obj, 'data'):
+        return True
+    return False
 
 class CircuitTemplateOptimizer(TransformationPass):
     """
@@ -90,7 +108,7 @@ class CircuitTemplateOptimizer(TransformationPass):
         circuit_dag_dep = dag_to_dagdependency(circuit_dag)
 
         for template in self.template_list:
-            if not isinstance(template, (QuantumCircuit, DAGDependency)):
+            if not (_is_quantum_circuit(template) or isinstance(template, DAGDependency)):
                 raise TranspilerError("A template is a Quantumciruit or a DAGDependency.")
 
             if len(template.qubits) > len(circuit_dag_dep.qubits):
@@ -112,7 +130,7 @@ class CircuitTemplateOptimizer(TransformationPass):
             except TypeError:
                 pass
 
-            if isinstance(template, QuantumCircuit):
+            if _is_quantum_circuit(template):
                 template_dag_dep = circuit_to_dagdependency(template)
             else:
                 template_dag_dep = template

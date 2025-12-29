@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017 - 2023.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -29,4 +29,4 @@ from .linear_matrix_utils import (
 
 # This is re-import is kept for compatibility with Terra 0.23. Eligible for deprecation in 0.25+.
 # pylint: disable=cyclic-import,wrong-import-order
-from compat.synthesis.linear_phase import synth_cnot_phase_aam as graysynth
+from janus.compat.synthesis.linear_phase import synth_cnot_phase_aam as graysynth

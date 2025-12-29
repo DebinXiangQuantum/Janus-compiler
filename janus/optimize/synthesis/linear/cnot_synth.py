@@ -1,4 +1,4 @@
-"""
+﻿"""
 Implementation of the GraySynth algorithm for synthesizing CNOT-Phase
 circuits with efficient CNOT cost, and the Patel-Hayes-Markov algorithm
 for optimal synthesis of linear (CNOT-only) reversible circuits.
@@ -7,57 +7,8 @@ for optimal synthesis of linear (CNOT-only) reversible circuits.
 from __future__ import annotations
 
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-
-# FIXME: from # FIXME: qiskit._accelerate.synthesis.linear import synth_cnot_count_full_pmh as fast_pmh
-# Python stub implementation
-def fast_pmh(matrix, section_size=2):
-    """
-    Stub: PMH (Patel-Markov-Hayes) CNOT合成算法
-
-    这是一个占位实现，返回简单的CNOT序列
-    实际实现需要Rust加速
-
-    Args:
-        matrix: 输入的布尔矩阵
-        section_size: 分段大小
-
-    Returns:
-        list: CNOT门序列 [[control, target], ...]
-    """
-    # 简单的高斯消元法生成CNOT
-    import numpy as np
-    mat = np.array(matrix, dtype=bool)
-    n = mat.shape[0]
-    gates = []
-
-    # 前向消元
-    for col in range(n):
-        # 找到主元
-        pivot = -1
-        for row in range(col, n):
-            if mat[row, col]:
-                pivot = row
-                break
-
-        if pivot == -1:
-            continue
-
-        # 交换行（使用SWAP或CX）
-        if pivot != col:
-            for i in range(n):
-                if i != col and i != pivot:
-                    if mat[i, col]:
-                        gates.append([i, col])
-                        mat[i] ^= mat[col]
-
-        # 消元
-        for row in range(n):
-            if row != col and mat[row, col]:
-                gates.append([col, row])
-                mat[row] ^= mat[col]
-
-    return gates
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.accelerate.synthesis.linear import synth_cnot_count_full_pmh as fast_pmh
 
 
 def synthesize_cnot_count_pmh(
@@ -98,11 +49,16 @@ def synthesize_cnot_count_pmh(
             f"({normalized.shape[1]})."
         )
 
-    # call Rust implementation with normalized input
-    circuit_data = fast_pmh(normalized, section_size)
+    # call Python implementation with normalized input
+    gates = fast_pmh(normalized, section_size if section_size else 2)
 
-    # construct circuit from the data
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    # construct circuit from the gate list
+    n = normalized.shape[0]
+    circuit = QuantumCircuit(n)
+    for ctrl, tgt in gates:
+        circuit.cx(ctrl, tgt)
+    
+    return circuit
 
 
 # Backward compatibility alias

@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """
 Janus Transpiler Passes Module
 

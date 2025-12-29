@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2020.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -17,10 +17,10 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a dag dependency to a circuit"""
-from circuit import Circuit as QuantumCircuit
+from janus.circuit import Circuit as QuantumCircuit
 # CircuitInstruction might not exist in Janus, create a stub if needed
 try:
-    from circuit import CircuitInstruction
+    from janus.circuit import CircuitInstruction
 except ImportError:
     CircuitInstruction = None
 

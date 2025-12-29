@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2021
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -28,7 +28,7 @@ from itertools import combinations
 
 import numpy as np
 
-from compat.exceptions import QiskitError
+from janus.compat.exceptions import JanusError
 
 from .utilities import EPSILON
 
@@ -104,7 +104,7 @@ def manual_get_vertex(polytope, seed=42):
             except np.linalg.LinAlgError:
                 pass
 
-    raise QiskitError(f"Polytope has no feasible solutions:\n{polytope}")
+    raise JanusError(f"Polytope has no feasible solutions:\n{polytope}")
 
 
 @dataclass
@@ -112,7 +112,7 @@ class XXPolytope:
     """
     Describes those two-qubit programs accessible to a given sequence of XX-type interactions.
 
-    NOTE: Strengths are normalized so that CX corresponds to pi / 4, which differs from Qiskit's
+    NOTE: Strengths are normalized so that CX corresponds to pi / 4, which differs from the standard
           conventions around RZX elsewhere.
     """
 

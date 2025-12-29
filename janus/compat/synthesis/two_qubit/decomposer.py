@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2021, 2024.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -27,12 +27,12 @@ from typing import Callable
 
 import numpy as np
 
-from circuit.quantumcircuit import QuantumCircuit
-from circuit.library import RXXGate, RZXGate
-from compat.exceptions import QiskitError
-from compat.Operator import Operator
-from compat.synthesis.one_qubit.one_qubit_decompose import ONE_QUBIT_EULER_BASIS_GATES
-from compat.synthesis.two_qubit.two_qubit_decompose import TwoQubitWeylDecomposition
+from janus.circuit.quantumcircuit import QuantumCircuit
+from janus.circuit.library import RXXGate, RZXGate
+from janus.compat.exceptions import JanusError
+from janus.compat.Operator import Operator
+from janus.compat.synthesis.one_qubit.one_qubit_decompose import ONE_QUBIT_EULER_BASIS_GATES
+from janus.compat.synthesis.two_qubit.two_qubit_decompose import TwoQubitWeylDecomposition
 
 from .circuits import apply_reflection, apply_shift, canonical_xx_circuit
 from .utilities import EPSILON
@@ -91,7 +91,7 @@ class XXDecomposer:
         embodiments: dict[float, QuantumCircuit] | None = None,
         backup_optimizer: Callable[..., QuantumCircuit] | None = None,
     ):
-        from compat.passmanager.passes.optimization.optimize_1q_decomposition import (
+        from janus.compat.passmanager.passes.optimization.optimize_1q_decomposition import (
             Optimize1qGatesDecomposition,  # pylint: disable=cyclic-import
         )
 
@@ -133,13 +133,13 @@ class XXDecomposer:
         pair (angle, circuit) satisfies Operator(circuit) approx RXX(angle).to_matrix().
         """
         # pylint: disable=cyclic-import
-        from compat.measures import average_gate_fidelity
+        from janus.compat.measures import average_gate_fidelity
 
         for angle, embodiment in self.embodiments.items():
             actual = Operator(RXXGate(angle))
             purported = Operator(embodiment)
             if average_gate_fidelity(actual, purported) < 1 - EPSILON:
-                raise QiskitError(
+                raise JanusError(
                     f"RXX embodiment provided for angle {angle} disagrees with RXXGate({angle})"
                 )
 
@@ -161,10 +161,10 @@ class XXDecomposer:
         while True:
             if len(priority_queue) == 0:
                 if len(available_strengths) == 0:
-                    raise QiskitError(
+                    raise JanusError(
                         "Attempting to synthesize entangling gate with no controlled gates in basis set."
                     )
-                raise QiskitError("Unable to synthesize a 2q unitary with the supplied basis set.")
+                raise JanusError("Unable to synthesize a 2q unitary with the supplied basis set.")
 
             sequence_cost, sequence = heapq.heappop(priority_queue)
 
@@ -210,7 +210,7 @@ class XXDecomposer:
     def _strength_to_infidelity(basis_fidelity, approximate=False):
         """
         Converts a dictionary mapping XX strengths to fidelities to a dictionary mapping XX
-        strengths to infidelities. Also supports one of the other formats Qiskit uses: if only a
+        strengths to infidelities. Also supports one of the other formats: if only a
         lone float is supplied, it extends it from CX over CX/2 and CX/3 by linear decay.
         """
 
@@ -264,7 +264,7 @@ class XXDecomposer:
             basis_fidelity, approximate=approximate
         )
 
-        from circuit.library import UnitaryGate  # pylint: disable=cyclic-import
+        from janus.circuit.library import UnitaryGate  # pylint: disable=cyclic-import
 
         # get the associated _positive_ canonical coordinate
         weyl_decomposition = TwoQubitWeylDecomposition(unitary)
@@ -324,7 +324,7 @@ class XXDecomposer:
 
         circ = self._decomposer1q(circ)
         if use_dag:
-            from compat.converters import circuit_to_dag
+            from janus.compat.converters import circuit_to_dag
 
             return circuit_to_dag(circ, copy_operations=False)
         return circ

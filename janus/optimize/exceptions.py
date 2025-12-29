@@ -1,12 +1,12 @@
-"""
+﻿"""
 Exceptions for the optimize module
-完全独立实现,不依赖qiskit
+完全独立实现
 """
 
-from compat.exceptions import (
+from janus.compat.exceptions import (
+    JanusError,
     TranspilerError,
     DAGCircuitError,
-    QiskitError,
     CircuitError,
 )
 
@@ -36,6 +36,7 @@ class DAGDependencyError(DAGCircuitError):
     pass
 
 __all__ = [
+    "JanusError",
     "TranspilerError",
     "TranspilerAccessError", 
     "CouplingError",
@@ -44,6 +45,5 @@ __all__ = [
     "InvalidLayoutError",
     "DAGCircuitError",
     "DAGDependencyError",
-    "QiskitError",
     "CircuitError",
 ]

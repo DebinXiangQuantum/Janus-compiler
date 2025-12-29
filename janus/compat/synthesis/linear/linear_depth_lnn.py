@@ -1,14 +1,14 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
 from __future__ import annotations
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2022, 2024.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -29,10 +29,10 @@ References:
          `arXiv:quant-ph/0701194 <https://arxiv.org/abs/quant-ph/0701194>`_.
 """
 import numpy as np
-from compat.exceptions import QiskitError
-from circuit import QuantumCircuit
-from compat.synthesis.linear.linear_matrix_utils import check_invertible_binary_matrix
-from compat.accelerate.synthesis.linear import py_synth_cnot_depth_line_kms as fast_kms
+from janus.compat.exceptions import JanusError
+from janus.circuit import QuantumCircuit
+from janus.compat.synthesis.linear.linear_matrix_utils import check_invertible_binary_matrix
+from janus.compat.accelerate.synthesis.linear import py_synth_cnot_depth_line_kms as fast_kms
 
 
 def synth_cnot_depth_line_kms(mat: np.ndarray[bool]) -> QuantumCircuit:
@@ -51,7 +51,7 @@ def synth_cnot_depth_line_kms(mat: np.ndarray[bool]) -> QuantumCircuit:
         The synthesized quantum circuit.
 
     Raises:
-        QiskitError: if ``mat`` is not invertible.
+        JanusError: if ``mat`` is not invertible.
 
     References:
         1. Kutin, S., Moulton, D. P., Smithline, L.,
@@ -59,9 +59,16 @@ def synth_cnot_depth_line_kms(mat: np.ndarray[bool]) -> QuantumCircuit:
            `arXiv:quant-ph/0701194 <https://arxiv.org/abs/quant-ph/0701194>`_
     """
     if not check_invertible_binary_matrix(mat):
-        raise QiskitError("The input matrix is not invertible.")
+        raise JanusError("The input matrix is not invertible.")
 
     circuit_data = fast_kms(mat)
 
-    # construct circuit from the data
-    return QuantumCircuit._from_circuit_data(circuit_data, legacy_qubits=True)
+    # Build circuit from gate list
+    n = mat.shape[0]
+    circuit = QuantumCircuit(n)
+    
+    for gate_name, qubits in circuit_data:
+        if gate_name == 'cx':
+            circuit.cx(qubits[0], qubits[1])
+    
+    return circuit

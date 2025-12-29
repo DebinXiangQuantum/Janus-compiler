@@ -1,0 +1,29 @@
+{
+    "description": "量子优化算法基准测试电路 (QFT风格)",
+    "n_qubits": 5,
+    "gates": [
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [1]},
+        {"gate": "H", "qubits": [2]},
+        {"gate": "H", "qubits": [3]},
+        {"gate": "H", "qubits": [4]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "RZ", "qubits": [1], "params": [0.785]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "RZ", "qubits": [2], "params": [0.393]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [0]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "CX", "qubits": [2, 3]},
+        {"gate": "CX", "qubits": [2, 3]},
+        {"gate": "CX", "qubits": [3, 4]},
+        {"gate": "T", "qubits": [4]},
+        {"gate": "Tdg", "qubits": [4]},
+        {"gate": "H", "qubits": [4]}
+    ]
+}

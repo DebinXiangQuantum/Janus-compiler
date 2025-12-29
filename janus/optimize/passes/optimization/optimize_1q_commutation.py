@@ -1,15 +1,15 @@
-"""Reduce 1Q gate complexity by commuting through 2Q gates and resynthesizing."""
+﻿"""Reduce 1Q gate complexity by commuting through 2Q gates and resynthesizing."""
 
 from copy import copy
 import logging
 from collections import deque
 
-from circuit import DAGCircuit
-# FIXME: Remove qiskit import import QuantumRegister
-from circuit.library import CXGate, RZXGate
-from circuit.dag import DAGOpNode
-from optimize.basepasses import TransformationPass
-from optimize.passes.optimization.optimize_1q_decomposition import (
+from janus.circuit import DAGCircuit
+# Import QuantumRegister
+from janus.circuit.library import CXGate, RZXGate
+from janus.circuit.dag import DAGOpNode
+from janus.optimize.basepasses import TransformationPass
+from janus.optimize.passes.optimization.optimize_1q_decomposition import (
     Optimize1qGatesDecomposition,
 )
 

@@ -1,11 +1,11 @@
-"""Utility functions for handling linear reversible circuits."""
+﻿"""Utility functions for handling linear reversible circuits."""
 
 import copy
 from typing import Callable
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.exceptions import CircuitError
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.exceptions import JanusError
+from janus.compat.exceptions import CircuitError
 from . import calc_inverse_matrix, check_invertible_binary_matrix
 
 
@@ -45,10 +45,10 @@ def optimize_cx_4_options(function: Callable, mat: np.ndarray, optimize_count: b
             the four options.
 
     Raises:
-        QiskitError: if mat is not an invertible matrix.
+        JanusError: if mat is not an invertible matrix.
     """
     if not check_invertible_binary_matrix(mat):
-        raise QiskitError("The matrix is not invertible.")
+        raise JanusError("The matrix is not invertible.")
 
     qc = function(mat)
     best_qc = qc

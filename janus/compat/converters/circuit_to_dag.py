@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2018.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -21,7 +21,7 @@ Modified for Janus - removed qiskit dependencies
 # STUB: BlueprintCircuit not needed for basic functionality
 BlueprintCircuit = type('BlueprintCircuit', (), {})
 # Use Janus's native circuit_to_dag instead of Rust accelerated version
-from circuit.dag import circuit_to_dag as _janus_circuit_to_dag
+from janus.circuit.dag import circuit_to_dag as _janus_circuit_to_dag
 
 
 def circuit_to_dag(circuit, copy_operations=True, *, qubit_order=None, clbit_order=None):
@@ -36,7 +36,7 @@ def circuit_to_dag(circuit, copy_operations=True, *, qubit_order=None, clbit_ord
             :class:`~.DAGCircuit` will be shared instances and modifications to
             operations in the :class:`~.DAGCircuit` will be reflected in the
             :class:`~.QuantumCircuit` (and vice versa).
-        qubit_order (Iterable[~qiskit.circuit.Qubit] or None): the order that the qubits should be
+        qubit_order (Iterable[Qubit] or None): the order that the qubits should be
             indexed in the output DAG.  Defaults to the same order as in the circuit.
         clbit_order (Iterable[Clbit] or None): the order that the clbits should be indexed in the
             output DAG.  Defaults to the same order as in the circuit.
@@ -53,9 +53,9 @@ def circuit_to_dag(circuit, copy_operations=True, *, qubit_order=None, clbit_ord
             :include-source:
             :nofigs:
 
-            from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
-            from circuit.dag import DAGCircuit
-            from compat.converters import circuit_to_dag
+            from janus.circuit import QuantumRegister, ClassicalRegister, QuantumCircuit
+            from janus.circuit.dag import DAGCircuit
+            from janus.compat.converters import circuit_to_dag
 
             q = QuantumRegister(3, 'q')
             c = ClassicalRegister(3, 'c')

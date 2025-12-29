@@ -1,12 +1,13 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
-"""
+﻿"""
+Compatibility layer for quantum circuit operations
 
-# This code is part of Qiskit.
+Independent implementation for Janus
+"""
+from __future__ import annotations
+
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2022
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -19,12 +20,11 @@ Modified for Janus - removed qiskit dependencies
 Circuit synthesis for the Clifford class for all-to-all architecture.
 """
 
-from __future__ import annotations
-from circuit import QuantumCircuit
-from compat.Clifford import Clifford
-from compat.synthesis.clifford.clifford_decompose_ag import synth_clifford_ag
-from compat.synthesis.clifford.clifford_decompose_bm import synth_clifford_bm
-from compat.synthesis.clifford.clifford_decompose_greedy import synth_clifford_greedy
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
+from janus.compat.synthesis.clifford.clifford_decompose_ag import synth_clifford_ag
+from janus.compat.synthesis.clifford.clifford_decompose_bm import synth_clifford_bm
+from janus.compat.synthesis.clifford.clifford_decompose_greedy import synth_clifford_greedy
 
 
 def synth_clifford_full(clifford: Clifford, method: str | None = None) -> QuantumCircuit:

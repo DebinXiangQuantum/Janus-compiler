@@ -1,16 +1,16 @@
-"""Optimize chains of single-qubit u1, u2, u3 gates by combining them into a single gate."""
+﻿"""Optimize chains of single-qubit u1, u2, u3 gates by combining them into a single gate."""
 
 from itertools import groupby
 
 import numpy as np
 
-from compat.exceptions import TranspilerError
-from circuit.library import PhaseGate, UGate, U1Gate, U2Gate, U3Gate
-from circuit import ParameterExpression
-from circuit import Gate
-from optimize.basepasses import TransformationPass
-from compat.quaternion import Quaternion
-# FIXME: from # FIXME: qiskit._accelerate.optimize_1q_gates import compose_u3_rust
+from janus.compat.exceptions import TranspilerError
+from janus.circuit.library import PhaseGate, UGate, U1Gate, U2Gate, U3Gate
+from janus.circuit import ParameterExpression
+from janus.circuit import Gate
+from janus.optimize.basepasses import TransformationPass
+from janus.compat.quaternion import Quaternion
+# Accelerated implementation.optimize_1q_gates import compose_u3_rust
 # Python implementation of compose_u3_rust
 import numpy as np
 
@@ -207,7 +207,7 @@ class SingleQubitGateOptimizer(TransformationPass):
                 else:
                     # For composing u3's or u2's with u3's, use
                     # u2(phi, lambda) = u3(pi/2, phi, lambda)
-                    # together with the qiskit.mapper.compose_u3 method.
+                    # together with the compose_u3 method.
                     if use_u:
                         right_name = "u"
                     else:
@@ -408,7 +408,7 @@ def _split_runs_on_parameters(runs):
         # We exclude only u3 and u gate because for u1 and u2 we can really straightforward
         # merge two gate with parameters.
         # It would be great to combine all gate with parameters but this requires
-        # support parameters in qiskit.quantum_info.Quaternion.
+        # support parameters in Quaternion.
         groups = groupby(run, lambda x: x.op.is_parameterized() and x.op.name in ("u3", "u"))
 
         for group_is_parameterized, gates in groups:

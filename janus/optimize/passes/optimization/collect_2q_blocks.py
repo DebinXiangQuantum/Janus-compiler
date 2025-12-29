@@ -1,8 +1,8 @@
-"""Collect sequences of uninterrupted gates acting on 2 qubits."""
+﻿"""Collect sequences of uninterrupted gates acting on 2 qubits."""
 
 from collections import defaultdict
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class TwoQubitBlockCollector(AnalysisPass):

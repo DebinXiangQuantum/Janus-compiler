@@ -1,4 +1,4 @@
-"""
+﻿"""
 Circuit synthesis for the Clifford class.
 """
 
@@ -9,17 +9,16 @@ Circuit synthesis for the Clifford class.
 
 import numpy as np
 
-from circuit import Circuit as QuantumCircuit
-from compat.clifford import Clifford
-# FIXME: Remove qiskit import - need to implement these helper functions
-# from compat.clifford_circuits import (
-#     _append_cx,
-#     _append_h,
-#     _append_s,
-#     _append_swap,
-#     _append_x,
-#     _append_z,
-# )
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
+from janus.compat.clifford_circuits import (
+    _append_cx,
+    _append_h,
+    _append_s,
+    _append_swap,
+    _append_x,
+    _append_z,
+)
 from .clifford_decompose_bm import synthesize_clifford_bravyi_maslov
 
 

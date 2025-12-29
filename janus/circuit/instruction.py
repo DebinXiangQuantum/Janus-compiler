@@ -1,4 +1,4 @@
-"""
+﻿"""
 Janus 电路指令
 
 表示电路中的一条指令，包含操作和作用的量子比特
@@ -65,12 +65,8 @@ class Instruction:
     
     def to_dict(self) -> dict:
         """转换为字典格式"""
-        result = {
+        return {
             'name': self._operation.name,
             'qubits': self._qubits,
             'params': self._operation.params
         }
-        # 如果有经典比特，添加 clbits 字段
-        if self._clbits:
-            result['clbits'] = self._clbits
-        return result

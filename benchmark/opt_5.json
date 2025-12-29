@@ -1,0 +1,22 @@
+{
+    "description": "模版匹配优化测试电路",
+    "n_qubits": 3,
+    "gates": [
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "CX", "qubits": [0, 1]},
+        {"gate": "H", "qubits": [0]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "T", "qubits": [1]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "T", "qubits": [2]},
+        {"gate": "Tdg", "qubits": [2]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "CX", "qubits": [1, 2]},
+        {"gate": "H", "qubits": [2]},
+        {"gate": "H", "qubits": [2]}
+    ]
+}

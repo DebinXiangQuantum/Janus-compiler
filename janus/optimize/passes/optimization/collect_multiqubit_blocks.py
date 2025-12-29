@@ -1,8 +1,8 @@
-"""Collect sequences of uninterrupted gates acting on a number of qubits."""
+﻿"""Collect sequences of uninterrupted gates acting on a number of qubits."""
 
-from optimize.basepasses import AnalysisPass
-from circuit import Gate
-from circuit.dag import DAGOpNode, DAGInNode
+from janus.optimize.basepasses import AnalysisPass
+from janus.circuit import Gate
+from janus.circuit.dag import DAGOpNode, DAGInNode
 
 
 class MultiQubitBlockCollector(AnalysisPass):

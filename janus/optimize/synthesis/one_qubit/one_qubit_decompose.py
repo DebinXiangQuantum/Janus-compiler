@@ -1,14 +1,14 @@
-"""
+﻿"""
 Decompose a single-qubit unitary via Euler angles.
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
 
-from compat.accelerate import euler_one_qubit_decomposer
-from circuit import Circuit as QuantumCircuit
-from circuit import Qubit
-from circuit.library import (
+from janus.compat.accelerate import euler_one_qubit_decomposer
+from janus.circuit import Circuit as QuantumCircuit
+from janus.circuit import Qubit
+from janus.circuit.library import (
     UGate,
     PhaseGate,
     U3Gate,
@@ -21,13 +21,13 @@ from circuit.library import (
     SXGate,
     XGate,
 )
-from compat.exceptions import QiskitError
-# FIXME: Remove qiskit import import is_unitary_matrix
-from circuit import Gate
-from compat.operator import Operator
+from janus.compat.exceptions import JanusError
+# Import is_unitary_matrix
+from janus.circuit import Gate
+from janus.compat.operator import Operator
 
 if TYPE_CHECKING:
-    from circuit import DAGCircuit
+    from janus.circuit import DAGCircuit
 
 DEFAULT_ATOL = 1e-12
 
@@ -133,11 +133,11 @@ class OneQubitEulerDecomposer:
         Args:
             basis: the decomposition basis [Default: ``'U3'``]
             use_dag: If true the output from calls to the decomposer
-                will be a :class:`~qiskit.dagcircuit.DAGCircuit` object instead of
-                :class:`~qiskit.circuit.QuantumCircuit`.
+                will be a :class:`~janus.circuit.DAGCircuit` object instead of
+                :class:`~janus.circuit.Circuit`.
 
         Raises:
-            QiskitError: If input basis is not recognized.
+            JanusError: If input basis is not recognized.
         """
         self.basis = basis  # sets: self._basis, self._params, self._circuit
         self.use_dag = use_dag
@@ -149,7 +149,7 @@ class OneQubitEulerDecomposer:
         if len(gates) > 0 and isinstance(gates[0], tuple):
             lookup_gate = True
 
-        # FIXME: Remove qiskit import import dagcircuit
+        # Import dagcircuit
 
         dag = dagcircuit.DAGCircuit()
         dag.global_phase = global_phase
@@ -181,7 +181,7 @@ class OneQubitEulerDecomposer:
             QuantumCircuit: the decomposed single-qubit gate circuit
 
         Raises:
-            QiskitError: if input is invalid or synthesis fails.
+            JanusError: if input is invalid or synthesis fails.
         """
         if hasattr(unitary, "to_operator"):
             # If input is a BaseOperator subclass this attempts to convert
@@ -197,9 +197,9 @@ class OneQubitEulerDecomposer:
 
         # Check input is a 2-qubit unitary
         if unitary.shape != (2, 2):
-            raise QiskitError("OneQubitEulerDecomposer: expected 2x2 input matrix")
+            raise JanusError("OneQubitEulerDecomposer: expected 2x2 input matrix")
         if not is_unitary_matrix(unitary):
-            raise QiskitError("OneQubitEulerDecomposer: input matrix is not unitary.")
+            raise JanusError("OneQubitEulerDecomposer: input matrix is not unitary.")
         return self._decompose(unitary, simplify=simplify, atol=atol)
 
     def _decompose(self, unitary, simplify=True, atol=DEFAULT_ATOL):
@@ -239,7 +239,7 @@ class OneQubitEulerDecomposer:
             "XZX": self._params_xzx,
         }
         if basis not in basis_methods:
-            raise QiskitError(f"OneQubitEulerDecomposer: unsupported basis {basis}")
+            raise JanusError(f"OneQubitEulerDecomposer: unsupported basis {basis}")
         self._basis = basis
         self._params = basis_methods[basis]
 

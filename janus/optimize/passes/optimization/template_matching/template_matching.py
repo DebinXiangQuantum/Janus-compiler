@@ -1,4 +1,4 @@
-"""
+﻿"""
 Template matching for all possible qubit configurations and initial matches. It
 returns the list of all matches obtained from this algorithm.
 
@@ -13,9 +13,9 @@ Exact and practical pattern matching for quantum circuit optimization.
 
 import itertools
 
-from circuit import Gate as ControlledGate  # Simplified
-from optimize.passes.optimization.template_matching.forward_match import ForwardMatch
-from optimize.passes.optimization.template_matching.backward_match import BackwardMatch
+from janus.circuit import Gate as ControlledGate  # Simplified
+from janus.optimize.passes.optimization.template_matching.forward_match import ForwardMatch
+from janus.optimize.passes.optimization.template_matching.backward_match import BackwardMatch
 
 
 class TemplatePatternMatcher:

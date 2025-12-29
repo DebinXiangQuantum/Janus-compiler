@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2022.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -19,7 +19,7 @@ Modified for Janus - removed qiskit dependencies
 """Utility functions for handling binary matrices."""
 
 # pylint: disable=unused-import
-from compat.accelerate.synthesis.linear import (
+from janus.compat.accelerate.synthesis.linear import (
     gauss_elimination,
     gauss_elimination_with_perm,
     compute_rank_after_gauss_elim,

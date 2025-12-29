@@ -1,4 +1,4 @@
-"""
+﻿"""
 Implementation of the GraySynth algorithm for synthesizing CNOT-Phase
 circuits with efficient CNOT cost, and the Patel-Hayes-Markov algorithm
 for optimal synthesis of linear (CNOT-only) reversible circuits.
@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import copy
 import numpy as np
-from circuit import Circuit as QuantumCircuit
-from compat.exceptions import QiskitError
-from compat.synthesis.linear import synth_cnot_count_full_pmh as synthesize_cnot_count_pmh
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.exceptions import JanusError
+from janus.compat.synthesis.linear import synth_cnot_count_full_pmh as synthesize_cnot_count_pmh
 
 
 def synthesize_cnot_phase_aam(
@@ -62,7 +62,7 @@ def synthesize_cnot_phase_aam(
         The decomposed quantum circuit.
 
     Raises:
-        QiskitError: when dimensions of ``cnots`` and ``angles`` don't align.
+        JanusError: when dimensions of ``cnots`` and ``angles`` don't align.
 
     References:
         1. Matthew Amy, Parsiad Azimzadeh, and Michele Mosca.
@@ -76,7 +76,7 @@ def synthesize_cnot_phase_aam(
     qcir = QuantumCircuit(num_qubits)
 
     if len(cnots[0]) != len(angles):
-        raise QiskitError('Size of "cnots" and "angles" do not match.')
+        raise JanusError('Size of "cnots" and "angles" do not match.')
 
     range_list = list(range(num_qubits))
     epsilon = num_qubits

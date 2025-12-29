@@ -1,4 +1,4 @@
-"""
+﻿"""
 Janus 量子门基类
 
 定义量子门的基本结构和接口
@@ -6,6 +6,7 @@ Janus 量子门基类
 from typing import List, Optional, Union
 import numpy as np
 from .operation import Operation
+from .parameter import is_parameterized as check_parameterized
 
 
 class Gate(Operation):
@@ -33,6 +34,7 @@ class Gate(Operation):
         self._params = params if params is not None else []
         self._label = label
         self._qubits: List[int] = []  # 实际作用的量子比特，在添加到电路时设置
+        self._definition = None  # 门的定义（分解为基础门的电路）
     
     @property
     def name(self) -> str:
@@ -68,6 +70,15 @@ class Gate(Operation):
     def label(self, value: str):
         self._label = value
     
+    @property
+    def definition(self):
+        """门的定义（分解为基础门的电路）"""
+        return self._definition
+    
+    @definition.setter
+    def definition(self, value):
+        self._definition = value
+    
     def to_matrix(self) -> np.ndarray:
         """
         返回门的酉矩阵表示
@@ -90,6 +101,10 @@ class Gate(Operation):
         new_gate._qubits = self._qubits.copy()
         return new_gate
     
+    def is_parameterized(self) -> bool:
+        """检查门是否包含未绑定的参数"""
+        return any(check_parameterized(param) for param in self._params)
+    
     def __repr__(self) -> str:
         if self._params:
             return f"{self._name}({', '.join(map(str, self._params))})"
@@ -101,6 +116,37 @@ class Gate(Operation):
         return (self._name == other._name and 
                 self._num_qubits == other._num_qubits and
                 self._params == other._params)
+    
+    def soft_compare(self, other) -> bool:
+        """
+        软比较两个门是否相同（用于模板匹配）
+        
+        比较门的名称和量子比特数，但不比较参数的精确值
+        
+        Args:
+            other: 另一个门或操作
+            
+        Returns:
+            bool: 如果门类型相同则返回 True
+        """
+        if other is None:
+            return False
+        
+        # 获取名称
+        self_name = self._name.lower()
+        other_name = getattr(other, 'name', str(other)).lower()
+        
+        # 比较名称
+        if self_name != other_name:
+            return False
+        
+        # 比较量子比特数
+        self_num_qubits = self._num_qubits
+        other_num_qubits = getattr(other, 'num_qubits', None)
+        if other_num_qubits is not None and self_num_qubits != other_num_qubits:
+            return False
+        
+        return True
     
     def to_dict(self) -> dict:
         """转换为字典格式（兼容旧格式）"""
@@ -260,95 +306,3 @@ class ControlledGate(Gate):
             label=label,
             ctrl_state=ctrl_state
         )
-
-
-class ClassicalControlledGate(Gate):
-    """
-    经典控制门类
-    
-    根据经典比特的测量结果来决定是否执行门操作
-    
-    Attributes:
-        base_gate: 基础门
-        clbit: 控制的经典比特索引
-        value: 触发条件值（当经典比特等于此值时执行门）
-    
-    Example:
-        # 创建一个经典控制的 X 门
-        x_gate = XGate()
-        c_x = ClassicalControlledGate(x_gate, clbit=0, value=1)
-        # 当经典比特 0 的值为 1 时，执行 X 门
-    """
-    
-    def __init__(
-        self,
-        base_gate: Gate,
-        clbit: int,
-        value: int = 1,
-        label: Optional[str] = None
-    ):
-        self._base_gate = base_gate
-        self._clbit = clbit
-        self._value = value
-        
-        # 构建名称
-        name = f"c_if({base_gate.name})"
-        
-        super().__init__(
-            name=name,
-            num_qubits=base_gate.num_qubits,
-            params=base_gate.params.copy(),
-            label=label
-        )
-    
-    @property
-    def base_gate(self) -> Gate:
-        """获取基础门"""
-        return self._base_gate
-    
-    @property
-    def clbit(self) -> int:
-        """获取控制的经典比特索引"""
-        return self._clbit
-    
-    @property
-    def condition_value(self) -> int:
-        """获取触发条件值"""
-        return self._value
-    
-    @property
-    def condition(self) -> tuple:
-        """获取条件元组 (clbit, value)"""
-        return (self._clbit, self._value)
-    
-    def to_matrix(self) -> np.ndarray:
-        """
-        返回基础门的酉矩阵
-        
-        注意：经典控制是在运行时根据测量结果决定的，
-        这里返回基础门的矩阵用于电路分析
-        """
-        return self._base_gate.to_matrix()
-    
-    def inverse(self) -> 'ClassicalControlledGate':
-        """返回经典控制门的逆"""
-        return ClassicalControlledGate(
-            base_gate=self._base_gate.inverse(),
-            clbit=self._clbit,
-            value=self._value,
-            label=self._label
-        )
-    
-    def copy(self) -> 'ClassicalControlledGate':
-        """创建经典控制门的副本"""
-        new_gate = ClassicalControlledGate(
-            base_gate=self._base_gate.copy(),
-            clbit=self._clbit,
-            value=self._value,
-            label=self._label
-        )
-        new_gate._qubits = self._qubits.copy()
-        return new_gate
-    
-    def __repr__(self) -> str:
-        return f"c_if({self._base_gate}, c[{self._clbit}]=={self._value})"

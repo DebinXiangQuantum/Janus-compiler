@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2022.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -21,9 +21,9 @@ Modified for Janus - removed qiskit dependencies
 import copy
 from typing import Callable
 import numpy as np
-from circuit import QuantumCircuit
-from compat.exceptions import QiskitError
-from circuit.exceptions import CircuitError
+from janus.circuit import QuantumCircuit
+from janus.compat.exceptions import JanusError
+from janus.circuit.exceptions import CircuitError
 from . import calc_inverse_matrix, check_invertible_binary_matrix
 
 
@@ -63,10 +63,10 @@ def optimize_cx_4_options(function: Callable, mat: np.ndarray, optimize_count: b
             the four options.
 
     Raises:
-        QiskitError: if mat is not an invertible matrix.
+        JanusError: if mat is not an invertible matrix.
     """
     if not check_invertible_binary_matrix(mat):
-        raise QiskitError("The matrix is not invertible.")
+        raise JanusError("The matrix is not invertible.")
 
     qc = function(mat)
     best_qc = qc

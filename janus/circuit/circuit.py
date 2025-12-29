@@ -1,4 +1,4 @@
-"""
+﻿"""
 Janus 量子电路
 
 核心电路类，提供量子电路的构建和操作
@@ -8,7 +8,7 @@ import uuid
 import copy
 import numpy as np
 
-from .gate import Gate, ControlledGate, ClassicalControlledGate
+from .gate import Gate, ControlledGate
 from .instruction import Instruction
 from .layer import Layer
 from .qubit import Qubit, QuantumRegister
@@ -147,8 +147,7 @@ class Circuit:
         layers: List[List[dict]],
         n_qubits: Optional[int] = None,
         n_clbits: int = 0,
-        name: Optional[str] = None,
-        auto_clbits: bool = True
+        name: Optional[str] = None
     ) -> 'Circuit':
         """
         从层列表创建电路
@@ -156,35 +155,17 @@ class Circuit:
         Args:
             layers: 层列表，每层是门字典的列表
                     格式: [[{'name': 'h', 'qubits': [0], 'params': []}], ...]
-                    测量门格式: [{'name': 'measure', 'qubits': [0, 2], 'params': []}]
-                    经典控制门格式: [{'name': 'x', 'qubits': [1], 'params': [], 'c_if': [0, 1]}]
-                    其中 c_if: [clbit, value] 表示当经典比特 clbit 的值等于 value 时执行
             n_qubits: 量子比特数（可选，自动推断）
-            n_clbits: 经典比特数（如果 auto_clbits=True 且有测量门，会自动增加）
+            n_clbits: 经典比特数
             name: 电路名称
-            auto_clbits: 是否自动为测量门分配经典比特（默认 True）
         
         Returns:
             Circuit: 新创建的电路
         
         Example:
-            # 基本用法
             circuit = Circuit.from_layers([
                 [{'name': 'h', 'qubits': [0], 'params': []}],
                 [{'name': 'cx', 'qubits': [0, 1], 'params': []}]
-            ], n_qubits=2)
-            
-            # 带测量门（自动分配经典比特）
-            circuit = Circuit.from_layers([
-                [{'name': 'h', 'qubits': [0], 'params': []}],
-                [{'name': 'measure', 'qubits': [0, 1], 'params': []}]
-            ], n_qubits=2)
-            
-            # 带经典控制门
-            circuit = Circuit.from_layers([
-                [{'name': 'h', 'qubits': [0], 'params': []}],
-                [{'name': 'measure', 'qubits': [0], 'params': []}],
-                [{'name': 'x', 'qubits': [1], 'params': [], 'c_if': [0, 1]}]
             ], n_qubits=2)
         """
         from .library import get_gate_class
@@ -198,76 +179,26 @@ class Circuit:
                         max_qubit = max(max_qubit, max(gate_dict['qubits']))
             n_qubits = max_qubit + 1
         
-        # 统计测量门需要的经典比特数
-        measure_qubits = []
-        for layer in layers:
-            for gate_dict in layer:
-                if gate_dict.get('name', '').lower() == 'measure':
-                    measure_qubits.extend(gate_dict.get('qubits', []))
-        
-        # 自动增加经典比特数
-        if auto_clbits and measure_qubits:
-            required_clbits = len(measure_qubits)
-            n_clbits = max(n_clbits, required_clbits)
-        
         circuit = cls(n_qubits, n_clbits, name)
-        
-        # 用于跟踪测量门的经典比特分配
-        clbit_counter = 0
-        # 记录量子比特到经典比特的映射（用于经典控制门）
-        qubit_to_clbit = {}
         
         for layer in layers:
             for gate_dict in layer:
                 gate_name = gate_dict['name']
                 qubits = gate_dict['qubits']
                 params = gate_dict.get('params', [])
-                c_if = gate_dict.get('c_if', None)  # 经典控制条件
                 
                 # 获取门类
                 gate_cls = get_gate_class(gate_name)
-                
-                # 处理测量门
-                if gate_name.lower() == 'measure':
-                    for qubit in qubits:
-                        if gate_cls:
-                            gate = gate_cls(*params) if params else gate_cls()
-                        else:
-                            gate = Gate(gate_name, 1, params)
-                        
-                        # 自动分配经典比特
-                        if auto_clbits and clbit_counter < n_clbits:
-                            clbit = clbit_counter
-                            qubit_to_clbit[qubit] = clbit
-                            circuit.append(gate, [qubit], [clbit])
-                            clbit_counter += 1
-                        else:
-                            circuit.append(gate, [qubit])
-                
-                # 处理其他单比特操作的多比特展开（如 reset）
-                elif gate_name.lower() == 'reset' and len(qubits) > 1:
-                    for qubit in qubits:
-                        if gate_cls:
-                            gate = gate_cls(*params) if params else gate_cls()
-                        else:
-                            gate = Gate(gate_name, 1, params)
-                        circuit.append(gate, [qubit])
-                
-                else:
-                    if gate_cls:
-                        if params:
-                            gate = gate_cls(*params)
-                        else:
-                            gate = gate_cls()
+                if gate_cls:
+                    if params:
+                        gate = gate_cls(*params)
                     else:
-                        # 回退到通用 Gate
-                        gate = Gate(gate_name, len(qubits), params)
-                    
-                    # 处理经典控制门
-                    if c_if is not None:
-                        gate = ClassicalControlledGate(gate, c_if[0], c_if[1])
-                    
-                    circuit.append(gate, qubits)
+                        gate = gate_cls()
+                else:
+                    # 回退到通用 Gate
+                    gate = Gate(gate_name, len(qubits), params)
+                
+                circuit.append(gate, qubits)
         
         return circuit
     
@@ -330,11 +261,21 @@ class Circuit:
         return self._n_qubits
     
     @property
+    def n_qubits(self) -> int:
+        """兼容性属性：与 num_qubits 相同"""
+        return self._n_qubits
+    
+    @property
     def n_clbits(self) -> int:
         return self._n_clbits
     
     @property
     def num_clbits(self) -> int:
+        return self._n_clbits
+    
+    @property
+    def n_clbits(self) -> int:
+        """兼容性属性：与 num_clbits 相同"""
         return self._n_clbits
     
     @property
@@ -572,15 +513,21 @@ class Circuit:
     
     # ==================== 添加门的方法 ====================
     
-    def append(self, gate: Gate, qubits: List[int], clbits: Optional[List[int]] = None):
+    def append(self, gate_or_circuit, qubits: List[int], clbits: Optional[List[int]] = None):
         """
-        添加一个门到电路
+        添加一个门或电路到当前电路
         
         Args:
-            gate: 要添加的门
+            gate_or_circuit: 要添加的门或电路
             qubits: 作用的量子比特
             clbits: 作用的经典比特（可选）
         """
+        # 如果是 Circuit 对象，则组合电路
+        if isinstance(gate_or_circuit, Circuit):
+            return self.compose(gate_or_circuit, qubits)
+        
+        # 否则按原来的方式处理门
+        gate = gate_or_circuit
         self._validate_qubits(qubits)
         if clbits:
             self._validate_clbits(clbits)
@@ -1333,52 +1280,6 @@ class Circuit:
         for i in range(self._n_qubits):
             self.measure(i, i)
         return self
-    
-    def add_clbits(self, n: int) -> 'Circuit':
-        """
-        添加经典比特
-        
-        Args:
-            n: 要添加的经典比特数量
-        
-        Returns:
-            Circuit: 返回自身以支持链式调用
-        """
-        self._n_clbits += n
-        if self._creg is None:
-            self._creg = ClassicalRegister(self._n_clbits, "c")
-        else:
-            self._creg = ClassicalRegister(self._n_clbits, "c")
-        return self
-    
-    def c_if(self, gate: Gate, qubits: Union[int, List[int]], clbit: int, value: int = 1) -> 'Circuit':
-        """
-        添加经典控制门
-        
-        根据经典比特的测量结果来决定是否执行门操作
-        
-        Args:
-            gate: 要添加的门
-            qubits: 作用的量子比特（单个或列表）
-            clbit: 控制的经典比特索引
-            value: 触发条件值（当经典比特等于此值时执行门）
-        
-        Returns:
-            Circuit: 返回自身以支持链式调用
-        
-        Example:
-            from janus.circuit import Circuit, XGate
-            
-            qc = Circuit(2, 1)
-            qc.h(0)
-            qc.measure(0, 0)
-            qc.c_if(XGate(), 1, clbit=0, value=1)  # 当 c[0]=1 时执行 X 门
-        """
-        if isinstance(qubits, int):
-            qubits = [qubits]
-        
-        controlled_gate = ClassicalControlledGate(gate, clbit, value)
-        return self.append(controlled_gate, qubits)
 
     # ==================== 链式调用支持 ====================
 
@@ -1566,6 +1467,10 @@ class Circuit:
         new_circuit.compose(other)
         return new_circuit
     
+    def __iand__(self, other: 'Circuit') -> 'Circuit':
+        """就地电路组合 (支持 &= 运算符)"""
+        return self.compose(other)
+    
     def inverse(self) -> 'Circuit':
         """返回电路的逆"""
         new_name = f"{self._name}_inv" if self._name else None
@@ -1573,6 +1478,21 @@ class Circuit:
         for inst in reversed(self._instructions):
             inv_gate = inst.operation.inverse()
             new_circuit.append(inv_gate, inst.qubits, inst.clbits)
+        return new_circuit
+    
+    def reverse_bits(self) -> 'Circuit':
+        """返回量子比特顺序反转的电路"""
+        new_name = f"{self._name}_reversed" if self._name else None
+        new_circuit = Circuit(self._n_qubits, self._n_clbits, new_name)
+        
+        # 创建量子比特映射：0 -> n-1, 1 -> n-2, ..., n-1 -> 0
+        qubit_map = {i: self._n_qubits - 1 - i for i in range(self._n_qubits)}
+        
+        for inst in self._instructions:
+            # 映射量子比特
+            mapped_qubits = [qubit_map[q] for q in inst.qubits]
+            new_circuit.append(inst.operation.copy(), mapped_qubits, inst.clbits)
+        
         return new_circuit
     
     # ==================== 转换方法 ====================
@@ -1601,135 +1521,6 @@ class Circuit:
             [('h', [0], []), ('cx', [0, 1], []), ...]
         """
         return [(inst.name, inst.qubits, inst.params) for inst in self._instructions]
-    
-    # ==================== JSON 序列化方法 ====================
-    
-    def to_json_dict(self) -> Dict:
-        """
-        将电路转换为完整的 JSON 可序列化字典
-        
-        Returns:
-            包含电路完整信息的字典
-        """
-        return {
-            'name': self._name,
-            'n_qubits': self._n_qubits,
-            'n_clbits': self._n_clbits,
-            'instructions': self.to_instructions()
-        }
-    
-    def to_json(self, indent: int = 2) -> str:
-        """
-        将电路转换为 JSON 字符串
-        
-        Args:
-            indent: JSON 缩进空格数，默认 2
-        
-        Returns:
-            JSON 格式字符串
-        """
-        import json
-        return json.dumps(self.to_json_dict(), indent=indent, ensure_ascii=False)
-    
-    def save_json(self, filepath: str, indent: int = 2):
-        """
-        将电路保存为 JSON 文件
-        
-        Args:
-            filepath: 文件路径
-            indent: JSON 缩进空格数，默认 2
-        """
-        import json
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(self.to_json_dict(), f, indent=indent, ensure_ascii=False)
-    
-    @classmethod
-    def from_json_dict(cls, data: Dict) -> 'Circuit':
-        """
-        从字典创建电路
-        
-        Args:
-            data: 包含电路信息的字典
-        
-        Returns:
-            Circuit 实例
-        """
-        from .converters import from_instruction_list
-        
-        n_qubits = data.get('n_qubits')
-        n_clbits = data.get('n_clbits', 0)
-        name = data.get('name')
-        instructions = data.get('instructions', [])
-        
-        circuit = from_instruction_list(instructions, n_qubits=n_qubits, n_clbits=n_clbits)
-        circuit._name = name
-        return circuit
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> 'Circuit':
-        """
-        从 JSON 字符串创建电路
-        
-        Args:
-            json_str: JSON 格式字符串
-        
-        Returns:
-            Circuit 实例
-        """
-        import json
-        data = json.loads(json_str)
-        return cls.from_json_dict(data)
-    
-    @classmethod
-    def load_json(cls, filepath: str) -> 'Circuit':
-        """
-        从 JSON 文件加载电路
-        
-        Args:
-            filepath: 文件路径
-        
-        Returns:
-            Circuit 实例
-        """
-        import json
-        with open(filepath, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return cls.from_json_dict(data)
-    
-    @classmethod
-    def load_layers_json(cls, filepath: str, n_qubits: int = None, n_clbits: int = 0, name: str = None) -> 'Circuit':
-        """
-        从分层格式 JSON 文件加载电路
-        
-        文件格式: [[{'name': 'h', 'qubits': [0], 'params': []}], [{'name': 'cx', 'qubits': [0, 1], 'params': []}], ...]
-        
-        Args:
-            filepath: 文件路径
-            n_qubits: 量子比特数（可选，自动推断）
-            n_clbits: 经典比特数（默认 0）
-            name: 电路名称（可选）
-        
-        Returns:
-            Circuit 实例
-        """
-        import json
-        with open(filepath, 'r', encoding='utf-8') as f:
-            layers = json.load(f)
-        return cls.from_layers(layers, n_qubits=n_qubits, n_clbits=n_clbits, name=name)
-    
-    def save_layers_json(self, filepath: str, indent: int = 2):
-        """
-        将电路保存为分层格式 JSON 文件
-        
-        输出格式: [[{'name': 'h', 'qubits': [0], 'params': []}], ...]
-        
-        Args:
-            filepath: 文件路径
-            indent: JSON 缩进空格数，默认 2
-        """
-        import json
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(self.to_layers(), f, indent=indent, ensure_ascii=False)
     
     # ==================== 显示方法 ====================
     
@@ -2306,6 +2097,7 @@ class Circuit:
                 rows[r_mid(q)] += "".join(segs_mid[q])
                 rows[r_bot(q)] += "".join(segs_bot[q])
 
+        # 处理折叠（分页方案）
         n_layers = len(self.layers)
         layer_width = cell_w  # 每层的字符宽度
         
@@ -2387,11 +2179,11 @@ class Circuit:
         return "\n\n".join(result_parts)
     
     def _draw_mpl(self, figsize: tuple = None):
-        """使用 matplotlib 绘制电路图，支持 LaTeX 数学符号、经典比特和经典控制门"""
+        """使用 matplotlib 绘制电路图，支持 LaTeX 数学符号"""
         try:
             import matplotlib.pyplot as plt
             import matplotlib.patches as patches
-            from matplotlib.patches import FancyBboxPatch, Circle, FancyArrowPatch
+            from matplotlib.patches import FancyBboxPatch, Circle
         except ImportError:
             raise ImportError("matplotlib is required for PNG output. Install with: pip install matplotlib")
         
@@ -2399,24 +2191,16 @@ class Circuit:
         plt.rcParams['text.usetex'] = False  # 使用 mathtext 而非完整 LaTeX
         plt.rcParams['mathtext.fontset'] = 'cm'  # Computer Modern 字体
         
-        # 计算图像大小 - 增加间距以容纳参数和经典比特
+        # 计算图像大小 - 增加间距以容纳参数
         n_layers = len(self.layers)
-        n_clbits = self._n_clbits
-        
-        # 计算总高度：量子比特 + 间隔 + 经典比特
-        total_height = self._n_qubits
-        clbit_start_y = self._n_qubits + 0.5  # 经典比特起始 y 坐标
-        if n_clbits > 0:
-            total_height = clbit_start_y + n_clbits * 0.4 + 0.3
-        
         if figsize is None:
-            width = min(20, n_layers * 1.8 + 3)
-            height = min(20, total_height * 1.0 + 1.5)
+            width = max(8, n_layers * 1.8 + 3)
+            height = max(4, self._n_qubits * 1.0 + 1.5)
             figsize = (width, height)
         
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_xlim(-0.8, n_layers + 0.8)
-        ax.set_ylim(-0.8, total_height + 0.2)
+        ax.set_ylim(-0.8, self._n_qubits - 0.2)
         ax.set_aspect('equal')
         ax.invert_yaxis()
         ax.axis('off')
@@ -2574,7 +2358,7 @@ class Circuit:
             # 门名称和参数一起显示 - 使用 LaTeX 格式
             label = format_gate_name_latex(gate_name, params)
             # 根据标签长度调整字体大小
-            fontsize = 19 if len(label) > 15 else 19
+            fontsize = 13 if len(label) > 15 else 14
             ax.text(x, y, label, ha='center', va='center', fontsize=fontsize, 
                    fontweight='bold', zorder=4)
         
@@ -2605,149 +2389,19 @@ class Circuit:
         # 先绘制量子比特线（最底层）
         for q in range(self._n_qubits):
             ax.hlines(q, -0.5, n_layers + 0.5, colors='black', linewidth=1, zorder=1)
-            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=25, fontweight='bold')
-        
-        # 绘制经典比特线（双线）
-        clbit_y_positions = {}  # 记录每个经典比特的 y 坐标
-        for c in range(n_clbits):
-            y = clbit_start_y + c * 0.4
-            clbit_y_positions[c] = y
-            # 绘制双线表示经典比特
-            ax.hlines(y - 0.03, -0.5, n_layers + 0.5, colors='black', linewidth=0.8, zorder=1)
-            ax.hlines(y + 0.03, -0.5, n_layers + 0.5, colors='black', linewidth=0.8, zorder=1)
-            ax.text(-0.7, y, rf'$c_{{{c}}}$', ha='right', va='center', fontsize=20, fontweight='bold')
-        
-        def draw_measure_connection(x, qubit_y, clbit_idx):
-            """绘制测量门到经典比特的连接线"""
-            if clbit_idx in clbit_y_positions:
-                clbit_y = clbit_y_positions[clbit_idx]
-                # 绘制从测量门底部到经典比特的连接线
-                ax.plot([x, x], [qubit_y + box_height/2, clbit_y], 
-                       color='black', linewidth=1, linestyle='-', zorder=1)
-                # 在经典比特线上绘制一个小箭头或标记
-                ax.plot(x, clbit_y, 'v', color='black', markersize=6, zorder=3)
-        
-        def draw_classical_control(x, clbit_idx, qubit_y, value):
-            """绘制经典控制的连接线"""
-            if clbit_idx in clbit_y_positions:
-                clbit_y = clbit_y_positions[clbit_idx]
-                # 绘制从经典比特到门的虚线
-                ax.plot([x, x], [clbit_y, qubit_y + box_height/2], 
-                       color='#666666', linewidth=1.5, linestyle='--', zorder=1)
-                # 在经典比特线上绘制控制点
-                ax.plot(x, clbit_y, 'o', color='#666666', markersize=8, 
-                       markerfacecolor='white', markeredgewidth=2, zorder=3)
-                # 显示条件值
-                ax.text(x + 0.15, clbit_y, f'={value}', ha='left', va='center', 
-                       fontsize=10, color='#666666', zorder=5)
+            ax.text(-0.7, q, rf'$q_{{{q}}}$', ha='right', va='center', fontsize=13, fontweight='bold')
         
         # 绘制每一层的门
         for layer_idx, layer in enumerate(self.layers):
-            base_x = layer_idx + 0.5
+            x = layer_idx + 0.5
             
-            # 分析这一层的门，找出多比特门并计算偏移
-            # 将门按照是否需要竖线分组，并检测重叠
-            # 需要竖线的门包括：多比特门、测量门（有到经典比特的连接线）
-            gates_with_vlines = []  # [(inst_idx, min_y, max_y, inst), ...]
-            gates_without_vlines = []  # [(inst_idx, inst), ...]
-            
-            for inst_idx, inst in enumerate(layer):
-                qs = list(inst.qubits)
-                if not qs:
-                    continue
-                
-                # 判断是否需要竖线
-                needs_vline = False
-                min_y, max_y = min(qs), max(qs)
-                
-                if len(qs) > 1:
-                    # 多比特门需要竖线
-                    needs_vline = True
-                elif inst.name == "measure" and inst.clbits:
-                    # 测量门有到经典比特的连接线
-                    needs_vline = True
-                    # 连接线从量子比特延伸到经典比特
-                    clbit_idx = inst.clbits[0]
-                    if clbit_idx in clbit_y_positions:
-                        max_y = clbit_y_positions[clbit_idx]
-                
-                # 检查是否是经典控制门
-                op = inst.operation
-                if isinstance(op, ClassicalControlledGate):
-                    needs_vline = True
-                    clbit_idx = op.clbit
-                    if clbit_idx in clbit_y_positions:
-                        max_y = max(max_y, clbit_y_positions[clbit_idx])
-                
-                if needs_vline:
-                    gates_with_vlines.append((inst_idx, min_y, max_y, inst))
-                else:
-                    gates_without_vlines.append((inst_idx, inst))
-            
-            # 为有竖线的门分配水平偏移，避免竖线重叠
-            gate_x_offsets = {}  # inst_idx -> x_offset
-            
-            if len(gates_with_vlines) > 1:
-                # 按 min_y 排序
-                gates_with_vlines.sort(key=lambda g: g[1])
-                
-                # 分配偏移槽位
-                slots = []  # 每个槽位记录已占用的 y 范围列表
-                
-                for inst_idx, min_y, max_y, inst in gates_with_vlines:
-                    # 找到一个不冲突的槽位
-                    placed = False
-                    for slot_idx, slot_ranges in enumerate(slots):
-                        # 检查是否与该槽位的任何范围重叠
-                        conflict = False
-                        for (s_min, s_max) in slot_ranges:
-                            # 检查范围是否重叠（包括边界相邻的情况）
-                            if not (max_y < s_min - 0.1 or min_y > s_max + 0.1):
-                                conflict = True
-                                break
-                        if not conflict:
-                            # 可以放在这个槽位
-                            slot_ranges.append((min_y, max_y))
-                            gate_x_offsets[inst_idx] = slot_idx
-                            placed = True
-                            break
-                    
-                    if not placed:
-                        # 需要新槽位
-                        slots.append([(min_y, max_y)])
-                        gate_x_offsets[inst_idx] = len(slots) - 1
-                
-                # 计算偏移量：如果有多个槽位，需要在水平方向错开
-                n_slots = len(slots)
-                if n_slots > 1:
-                    slot_width = 0.5 / n_slots  # 每个槽位的宽度
-                    for inst_idx in gate_x_offsets:
-                        slot_idx = gate_x_offsets[inst_idx]
-                        # 居中分布
-                        gate_x_offsets[inst_idx] = (slot_idx - (n_slots - 1) / 2) * slot_width
-                else:
-                    for inst_idx in gate_x_offsets:
-                        gate_x_offsets[inst_idx] = 0
-            else:
-                # 只有一个或没有需要竖线的门，不需要偏移
-                for inst_idx, _, _, _ in gates_with_vlines:
-                    gate_x_offsets[inst_idx] = 0
-            
-            # 没有竖线的门不需要偏移
-            for inst_idx, _ in gates_without_vlines:
-                gate_x_offsets[inst_idx] = 0
-            
-            # 绘制门
-            for inst_idx, inst in enumerate(layer):
+            for inst in layer:
                 qs = list(inst.qubits)
                 name = inst.name
                 params = inst.params if hasattr(inst, 'params') else []
                 
                 if not qs:
                     continue
-                
-                # 获取该门的 x 坐标（基础 + 偏移）
-                x = base_x + gate_x_offsets.get(inst_idx, 0)
                 
                 if name == "cx":
                     c, t = qs[0], qs[1]
@@ -2808,41 +2462,15 @@ class Circuit:
                 elif name == "measure":
                     q = qs[0]
                     draw_gate_box(x, q, "M", color='#FFE4B5')
-                    # 绘制到经典比特的连接
-                    clbits = inst.clbits if hasattr(inst, 'clbits') else []
-                    if clbits:
-                        draw_measure_connection(x, q, clbits[0])
                 
                 else:
-                    # 检查是否是经典控制门
-                    op = inst.operation
-                    is_classical_controlled = isinstance(op, ClassicalControlledGate)
-                    
-                    if is_classical_controlled:
-                        # 经典控制门：绘制基础门并添加经典控制连接
-                        base_name = op.base_gate.name
-                        base_params = op.base_gate.params
-                        clbit = op.clbit
-                        value = op.condition_value
-                        
-                        if len(qs) == 1:
-                            draw_gate_box(x, qs[0], base_name, params=base_params if base_params else None, 
-                                         color='#E8E8FF')  # 使用不同颜色标识经典控制门
-                            draw_classical_control(x, clbit, qs[0], value)
-                        else:
-                            ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
-                            for q in qs:
-                                draw_gate_box(x, q, base_name, params=base_params if base_params else None,
-                                             color='#E8E8FF')
-                            draw_classical_control(x, clbit, max(qs), value)
+                    # 单比特门或其他门
+                    if len(qs) == 1:
+                        draw_gate_box(x, qs[0], name, params=params if params else None)
                     else:
-                        # 普通单比特门或其他门
-                        if len(qs) == 1:
-                            draw_gate_box(x, qs[0], name, params=params if params else None)
-                        else:
-                            ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
-                            for q in qs:
-                                draw_gate_box(x, q, name, params=params if params else None)
+                        ax.vlines(x, min(qs), max(qs), colors='black', linewidth=1.5, zorder=1)
+                        for q in qs:
+                            draw_gate_box(x, q, name, params=params if params else None)
         
         plt.tight_layout()
         return fig
@@ -2858,6 +2486,94 @@ class Circuit:
     def __getitem__(self, index: int) -> Layer:
         """获取指定层"""
         return self.layers[index]
+    
+    # ==================== 类方法 ====================
+    
+    @classmethod
+    def _from_circuit_data(cls, circuit_data, legacy_qubits: bool = False) -> 'Circuit':
+        """
+        从电路数据创建电路（兼容 _from_circuit_data 方法）
+        
+        Args:
+            circuit_data: 电路数据，可以是指令列表或其他格式
+            legacy_qubits: 是否使用传统量子比特格式（兼容性参数）
+        
+        Returns:
+            Circuit: 创建的电路
+        """
+        from .library import get_gate_class
+        
+        # 如果 circuit_data 是列表，假设是指令列表
+        if isinstance(circuit_data, list):
+            # 推断量子比特数
+            max_qubit = -1
+            for item in circuit_data:
+                if hasattr(item, 'qubits'):
+                    qubits = item.qubits
+                elif isinstance(item, (list, tuple)) and len(item) >= 2:
+                    qubits = item[1] if isinstance(item[1], list) else [item[1]]
+                else:
+                    continue
+                
+                if qubits:
+                    max_qubit = max(max_qubit, max(qubits))
+            
+            # 对于两量子比特系统，确保至少有2个量子比特
+            n_qubits = max(max_qubit + 1, 2) if max_qubit >= 0 else 2
+            circuit = cls(n_qubits)
+            
+            # 添加指令
+            for item in circuit_data:
+                if hasattr(item, 'operation') and hasattr(item, 'qubits'):
+                    # 已经是 Instruction 对象
+                    circuit.append(item.operation, item.qubits, getattr(item, 'clbits', None))
+                elif isinstance(item, (list, tuple)) and len(item) >= 2:
+                    # 格式: (gate_name, qubits, params) 或 [gate_name, qubits, params]
+                    gate_name = item[0]
+                    qubits = item[1] if isinstance(item[1], list) else [item[1]]
+                    params = item[2] if len(item) > 2 else []
+                    
+                    # 创建门
+                    gate_cls = get_gate_class(gate_name)
+                    if gate_cls:
+                        if params:
+                            gate = gate_cls(*params)
+                        else:
+                            gate = gate_cls()
+                    else:
+                        # 回退到通用 Gate
+                        from .gate import Gate
+                        gate = Gate(gate_name, len(qubits), params)
+                    
+                    circuit.append(gate, qubits)
+                elif hasattr(item, 'name') and hasattr(item, 'qubits'):
+                    # 类似指令的对象
+                    gate_name = item.name
+                    qubits = item.qubits
+                    params = getattr(item, 'params', [])
+                    
+                    gate_cls = get_gate_class(gate_name)
+                    if gate_cls:
+                        if params:
+                            gate = gate_cls(*params)
+                        else:
+                            gate = gate_cls()
+                    else:
+                        from .gate import Gate
+                        gate = Gate(gate_name, len(qubits), params)
+                    
+                    circuit.append(gate, qubits)
+            
+            return circuit
+        
+        # 如果是其他格式，尝试直接转换
+        elif hasattr(circuit_data, '__iter__'):
+            # 可迭代对象，尝试作为指令列表处理
+            return cls._from_circuit_data(list(circuit_data), legacy_qubits)
+        
+        else:
+            # 不支持的格式，创建空电路
+            return cls(2)
 
 
 class SeperatableCircuit:

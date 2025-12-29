@@ -1,17 +1,17 @@
-"""Replace each sequence of Clifford gates by a single Clifford gate."""
+﻿"""Replace each sequence of Clifford gates by a single Clifford gate."""
 
 from functools import partial
 
-from compat.exceptions import QiskitError
-from optimize.passes.optimization.collect_and_collapse import (
+from janus.compat.exceptions import JanusError
+from janus.optimize.passes.optimization.collect_and_collapse import (
     CollectAndCollapse,
     collect_using_filter_function,
     collapse_to_operation,
 )
 
-from compat.clifford import Clifford
+from janus.compat.clifford import Clifford
 
-# TODO: Import or define _BASIS_1Q, _BASIS_2Q from qiskit
+# Clifford basis gate definitions
 # Temporary stub definitions for Clifford basis gates
 _BASIS_1Q = {
     'id': None, 'x': None, 'y': None, 'z': None,
@@ -24,7 +24,7 @@ _BASIS_2Q = {
 
 
 class CliffordCollector(CollectAndCollapse):
-    """Collects blocks of Clifford gates and replaces them by a :class:`~qiskit.quantum_info.Clifford`
+    """Collects blocks of Clifford gates and replaces them by a :class:`~janus.quantum_info.Clifford`
     object.
     """
 
@@ -96,7 +96,7 @@ def _is_clifford_gate(node, matrix_based=False):
     try:
         Clifford(node.op)
         return True
-    except QiskitError:
+    except JanusError:
         return False
 
 

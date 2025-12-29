@@ -1,13 +1,13 @@
-"""
+﻿"""
 Circuit synthesis for the Clifford class for all-to-all architecture.
 """
 
 from __future__ import annotations
-from circuit import Circuit as QuantumCircuit
-from compat.clifford import Clifford
-from optimize.synthesis.clifford.clifford_decompose_ag import synthesize_clifford_aaronson_gottesman
-from optimize.synthesis.clifford.clifford_decompose_bm import synthesize_clifford_bravyi_maslov
-from optimize.synthesis.clifford.clifford_decompose_greedy import synthesize_clifford_greedy
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
+from janus.optimize.synthesis.clifford.clifford_decompose_ag import synthesize_clifford_aaronson_gottesman
+from janus.optimize.synthesis.clifford.clifford_decompose_bm import synthesize_clifford_bravyi_maslov
+from janus.optimize.synthesis.clifford.clifford_decompose_greedy import synthesize_clifford_greedy
 
 
 def synthesize_clifford_circuit(clifford: Clifford, method: str | None = None) -> QuantumCircuit:

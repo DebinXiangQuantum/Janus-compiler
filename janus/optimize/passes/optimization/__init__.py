@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """Module containing transpiler optimization passes."""
 
 # Technology 1: Clifford+Rz Optimization

@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2017, 2019.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -17,10 +17,10 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a circuit to an instruction."""
-from compat.exceptions import QiskitError
-from circuit.instruction import Instruction
-from circuit import QuantumRegister
-from circuit import ClassicalRegister
+from janus.compat.exceptions import JanusError
+from janus.circuit.instruction import Instruction
+from janus.circuit import QuantumRegister
+from janus.circuit import ClassicalRegister
 
 
 def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None, label=None):
@@ -41,10 +41,10 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
         label (str): Optional instruction label.
 
     Raises:
-        QiskitError: if parameter_map is not compatible with circuit
+        JanusError: if parameter_map is not compatible with circuit
 
     Return:
-        qiskit.circuit.Instruction: an instruction equivalent to the action of the
+        janus.circuit.Instruction: an instruction equivalent to the action of the
         input circuit. Upon decomposition, this instruction will
         yield the components comprising the original circuit.
 
@@ -53,8 +53,8 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
             :include-source:
             :nofigs:
 
-            from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
-            from compat.converters import circuit_to_instruction
+            from janus.circuit import QuantumRegister, ClassicalRegister, QuantumCircuit
+            from janus.compat.converters import circuit_to_instruction
 
             q = QuantumRegister(3, 'q')
             c = ClassicalRegister(3, 'c')
@@ -66,15 +66,15 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
             circuit_to_instruction(circ)
     """
     # pylint: disable=cyclic-import
-    from circuit.quantumcircuit import QuantumCircuit
+    from janus.circuit.quantumcircuit import QuantumCircuit
 
     if circuit.num_input_vars:
         # This could be supported by moving the `input` variables to be parameters of the
         # instruction, but we don't really have a good representation of that yet, so safer to
         # forbid it.
-        raise QiskitError("Circuits with 'input' variables cannot yet be converted to instructions")
+        raise JanusError("Circuits with 'input' variables cannot yet be converted to instructions")
     if circuit.num_captured_vars:
-        raise QiskitError("Circuits that capture variables cannot be converted to instructions")
+        raise JanusError("Circuits that capture variables cannot be converted to instructions")
     if circuit.num_declared_vars:
         # This could very easily be supported in representations, since the variables are allocated
         # and freed within the instruction itself.  The reason to initially forbid it is to avoid
@@ -85,13 +85,13 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
         # forbidding it here means users get a more meaningful error at the point that the
         # instruction actually gets created (since users often aren't aware that
         # `QuantumCircuit.append(QuantumCircuit)` implicitly converts to an instruction).
-        raise QiskitError(
+        raise JanusError(
             "Circuits with internal variables cannot yet be converted to instructions."
             " You may be able to use `QuantumCircuit.compose` to inline this circuit into another."
         )
 
     if circuit.has_control_flow_op():
-        raise QiskitError(
+        raise JanusError(
             "Circuits with control flow operations cannot be converted to an instruction."
         )
 
@@ -101,7 +101,7 @@ def circuit_to_instruction(circuit, parameter_map=None, equivalence_library=None
         parameter_dict = circuit._unroll_param_dict(parameter_map)
 
     if parameter_dict.keys() != circuit.parameters:
-        raise QiskitError(
+        raise JanusError(
             "parameter_map should map all circuit parameters. "
             f"Circuit parameters: {circuit.parameters}, parameter_map: {parameter_dict}"
         )

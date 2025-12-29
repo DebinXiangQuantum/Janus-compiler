@@ -1,7 +1,7 @@
-"""
+﻿"""
 Quaternion类 - 四元数表示
 用于单量子比特门的优化
-完全独立实现,不依赖qiskit
+完全独立实现
 """
 
 import numpy as np

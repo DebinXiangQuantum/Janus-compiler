@@ -1,6 +1,6 @@
-"""Calculate the number of qubits of a DAG circuit."""
+﻿"""Calculate the number of qubits of a DAG circuit."""
 
-from optimize.basepasses import AnalysisPass
+from janus.optimize.basepasses import AnalysisPass
 
 
 class NumQubits(AnalysisPass):

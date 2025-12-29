@@ -1,15 +1,13 @@
-"""
+﻿"""
 Circuit synthesis for 2-qubit and 3-qubit Cliffords based on Bravyi & Maslov
 decomposition.
 """
 
-from circuit import Circuit as QuantumCircuit
-from compat.clifford import Clifford
+from janus.circuit import Circuit as QuantumCircuit
+from janus.compat.clifford import Clifford
 
-# Import from qiskit._accelerate.synthesis.clifford
-from qiskit._accelerate.synthesis.clifford import (
-    synth_clifford_bm_inner,
-)
+# Use compat implementation for accelerated synthesis
+from janus.compat.synthesis.clifford.clifford_decompose_bm import synth_clifford_bm as _synth_clifford_bm
 
 
 def synthesize_clifford_bravyi_maslov(clifford: Clifford) -> QuantumCircuit:
@@ -23,19 +21,14 @@ def synthesize_clifford_bravyi_maslov(clifford: Clifford) -> QuantumCircuit:
         A circuit implementation of the Clifford.
 
     Raises:
-        QiskitError: if Clifford is on more than 3 qubits.
+        JanusError: if Clifford is on more than 3 qubits.
 
     References:
         1. S. Bravyi, D. Maslov, *Hadamard-free circuits expose the
            structure of the Clifford group*,
            `arXiv:2003.09412 [quant-ph] <https://arxiv.org/abs/2003.09412>`_
     """
-    circuit = QuantumCircuit._from_circuit_data(
-        synth_clifford_bm_inner(clifford.tableau.astype(bool)),
-        legacy_qubits=True,
-        name=str(clifford),
-    )
-    return circuit
+    return _synth_clifford_bm(clifford)
 
 
 # Backward compatibility alias

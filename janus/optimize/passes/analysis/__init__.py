@@ -1,4 +1,4 @@
-# This code is part of Janus Quantum Compiler.
+﻿# This code is part of Janus Quantum Compiler.
 """Module containing circuit analysis passes."""
 
 # Technology 9: Metrics Analysis

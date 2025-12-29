@@ -1,4 +1,4 @@
-"""Base transpiler passes."""
+﻿"""Base transpiler passes."""
 from __future__ import annotations
 
 import abc
@@ -6,10 +6,10 @@ from abc import abstractmethod
 from collections.abc import Callable, Hashable, Iterable
 from inspect import signature
 
-from circuit import Circuit as QuantumCircuit
-from circuit import DAGCircuit
-from compat.passmanager import GenericPass, PassManagerIR
-from compat.passmanager import PropertySet, RunState, PassManagerState
+from janus.circuit import Circuit as QuantumCircuit
+from janus.circuit import DAGCircuit
+from janus.compat.passmanager import GenericPass, PassManagerIR
+from janus.compat.passmanager import PropertySet, RunState, PassManagerState
 
 from .exceptions import TranspilerError
 
@@ -69,7 +69,7 @@ class BasePass(GenericPass, metaclass=MetaPass):
         # Note that this implementation is incorrect.
         # This must be reimplemented in the future release.
         # See the discussion below for details.
-        # https://github.com/Qiskit/qiskit/pull/10127#discussion_r1329982732
+        # https://github.com/Janus-compiler/janus/pull/10127#discussion_r1329982732
         return hash(self) == hash(other)
 
     @abstractmethod
@@ -120,7 +120,7 @@ class BasePass(GenericPass, metaclass=MetaPass):
             If on transformation pass, the resulting QuantumCircuit.
             If analysis pass, the input circuit.
         """
-        from compat.passmanager import PassManager  # pylint: disable=cyclic-import
+        from janus.compat.passmanager import PassManager  # pylint: disable=cyclic-import
 
         pm = PassManager([self])
         # Previous versions of the `__call__` function would not construct a `PassManager`, but just

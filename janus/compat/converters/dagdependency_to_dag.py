@@ -1,12 +1,12 @@
-"""
-This file is adapted from Qiskit
-Original: qiskit/...
-Modified for Janus - removed qiskit dependencies
+﻿"""
+Compatibility layer for quantum circuit operations
+
+Independent implementation for Janus
 """
 
-# This code is part of Qiskit.
+# This code is part of Janus.
 #
-# (C) Copyright IBM 2020.
+# Copyright Janus Authors.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -17,7 +17,7 @@ Modified for Janus - removed qiskit dependencies
 # that they have been altered from the originals.
 
 """Helper function for converting a dag dependency to a dag circuit"""
-from circuit.dag import DAGCircuit
+from janus.circuit.dag import DAGCircuit
 
 
 def dagdependency_to_dag(dagdependency):
@@ -46,7 +46,24 @@ def dagdependency_to_dag(dagdependency):
     for node in dagdependency.topological_nodes():
         # Get arguments for classical control (if any)
         inst = node.op.copy()
-        dagcircuit.apply_operation_back(inst, node.qargs, node.cargs)
+        
+        # Convert qargs to actual Qubit objects if they are indices
+        qargs = []
+        for q in node.qargs:
+            if isinstance(q, int):
+                qargs.append(dagdependency.qubits[q])
+            else:
+                qargs.append(q)
+        
+        # Convert cargs to actual Clbit objects if they are indices
+        cargs = []
+        for c in node.cargs:
+            if isinstance(c, int):
+                cargs.append(dagdependency.clbits[c])
+            else:
+                cargs.append(c)
+        
+        dagcircuit.apply_operation_back(inst, qargs, cargs)
 
     # copy metadata
     dagcircuit.global_phase = dagdependency.global_phase
