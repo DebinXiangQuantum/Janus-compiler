@@ -167,27 +167,29 @@ Janus 提供电路优化功能，可以减少门数量：
 第六步：保存和加载电路
 ----------------------
 
-电路可以保存为 JSON 格式：
+Janus 提供便捷的电路文件操作函数：
 
 .. code-block:: python
 
-   from janus.circuit import Circuit, load_circuit, list_circuits
+   from janus.circuit import Circuit, load_circuit, save_circuit, list_circuits
 
    # 创建电路
-   qc = Circuit(2)
-   qc.h(0)
-   qc.cx(0, 1)
+   qc = Circuit.from_layers([
+       [{'name': 'h', 'qubits': [0], 'params': []}],
+       [{'name': 'cx', 'qubits': [0, 1], 'params': []}],
+   ], n_qubits=2)
 
-   # 保存为 JSON（手动）
-   import json
-   with open('my_circuit.json', 'w') as f:
-       json.dump(qc.to_layers(), f)
-
-   # 加载电路
-   qc_loaded = load_circuit(filepath='my_circuit.json')
+   # 保存电路
+   save_circuit(qc, 'my_bell.json')
 
    # 列出预置电路
-   print(list_circuits())
+   print(list_circuits())  # ['bell', 'test']
+
+   # 加载预置电路
+   bell = load_circuit(name='bell')
+
+   # 加载自定义电路
+   qc_loaded = load_circuit(filepath='my_bell.json')
 
 完整示例：Bell 态
 -----------------

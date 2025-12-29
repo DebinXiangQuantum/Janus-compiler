@@ -67,9 +67,9 @@ full = [
 [project.urls]
 Homepage = "https://github.com/DebinXiangQuantum/Janus-compiler"
 Documentation = "https://janus-quantum.readthedocs.io"
-Repository = "https://github.com/DebinXiangQuantum/Janus-compiler"
+Repository = "https://github.com/DebinXiangQuantum/Janus-compiler.git"
 Issues = "https://github.com/DebinXiangQuantum/Janus-compiler/issues"
-Changelog = "https://github.com/DebinXiangQuantum/Janus-compiler/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/DebinXiangQuantum/Janus-compiler/blob/main/docs/changelog.rst"
 
 [project.scripts]
 janus-cli = "janus.circuit.cli:main"

@@ -95,6 +95,24 @@ from janus.compiler import compile_circuit
 optimized = compile_circuit(qc, optimization_level=2)
 ```
 
+### 电路文件操作
+
+```python
+from janus.circuit import load_circuit, save_circuit, list_circuits
+
+# 列出预置电路
+print(list_circuits())  # ['bell', 'test']
+
+# 加载预置电路
+qc = load_circuit(name='bell')
+
+# 从文件加载
+qc = load_circuit(filepath='./my_circuit.json')
+
+# 保存电路
+save_circuit(qc, 'my_circuit.json')
+```
+
 ## 📚 文档
 
 完整文档请访问：[https://janus-quantum.readthedocs.io](https://janus-quantum.readthedocs.io)

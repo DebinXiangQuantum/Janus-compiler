@@ -247,6 +247,8 @@ DAG 表示
 文件读写
 --------
 
+Janus 提供便捷的电路文件读写功能。
+
 **JSON 格式**
 
 电路以分层 JSON 格式存储：
@@ -259,16 +261,26 @@ DAG 表示
      [{"name": "rx", "qubits": [0], "params": [1.57]}]
    ]
 
+**列出可用电路**
+
+.. code-block:: python
+
+   from janus.circuit import list_circuits
+
+   # 列出预置电路
+   circuits = list_circuits()
+   print(circuits)  # ['bell', 'test']
+
+   # 列出指定目录的电路
+   circuits = list_circuits(directory='./my_circuits')
+
 **加载电路**
 
 .. code-block:: python
 
-   from janus.circuit import load_circuit, list_circuits
+   from janus.circuit import load_circuit
 
-   # 列出预置电路
-   print(list_circuits())  # ['bell.json', ...]
-
-   # 从预置目录加载
+   # 从预置目录加载（按名称）
    qc = load_circuit(name='bell')
 
    # 从指定路径加载
@@ -278,10 +290,37 @@ DAG 表示
 
 .. code-block:: python
 
+   from janus.circuit import save_circuit, Circuit
+
+   # 创建电路
+   qc = Circuit.from_layers([
+       [{'name': 'h', 'qubits': [0], 'params': []}],
+       [{'name': 'cx', 'qubits': [0, 1], 'params': []}],
+   ], n_qubits=2)
+
+   # 保存电路（自动包含 n_qubits 信息）
+   save_circuit(qc, 'my_circuit.json')
+
+保存的文件格式：
+
+.. code-block:: json
+
+   {
+     "n_qubits": 2,
+     "layers": [
+       [{"name": "h", "qubits": [0], "params": []}],
+       [{"name": "cx", "qubits": [0, 1], "params": []}]
+     ]
+   }
+
+**手动保存（仅层数据）**
+
+.. code-block:: python
+
    import json
 
-   # 保存为 JSON
-   with open('my_circuit.json', 'w') as f:
+   # 仅保存层数据
+   with open('circuit_layers.json', 'w') as f:
        json.dump(qc.to_layers(), f, indent=2)
 
 命令行工具
