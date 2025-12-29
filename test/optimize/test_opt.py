@@ -14,7 +14,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from janus.circuit import Circuit as QuantumCircuit
 from janus.circuit import circuit_to_dag, dag_to_circuit
-from janus.optimize import TChinMerger, CliffordMerger, InverseGateCanceller
+from janus.optimize import (
+    # 技术1: Clifford+Rz优化
+    TChinMerger, CliffordMerger,
+    # 技术2: 门融合优化
+    SingleQubitGateOptimizer, SingleQubitRunCollector,
+    # 技术3: 交换性优化
+    CommutativeGateCanceller, InverseGateCanceller, CommutativeInverseGateCanceller,
+    # 技术10: 智能优化
+    smart_optimize,
+)
 
 
 def load_circuit_from_json(filepath):
@@ -70,11 +79,34 @@ def count_ops(circuit):
 
 
 def run_optimization(qc):
-    """运行优化并返回优化后的电路"""
+    """运行全面优化并返回优化后的电路
+    
+    使用多种优化技术组合:
+    - 技术1: T门合并 (TChinMerger)
+    - 技术1: Clifford门合并 (CliffordMerger)
+    - 技术2: 单比特门优化 (SingleQubitGateOptimizer)
+    - 技术3: 交换性消除 (CommutativeGateCanceller)
+    - 技术3: 逆门消除 (InverseGateCanceller)
+    - 技术3: 交换性逆门消除 (CommutativeInverseGateCanceller)
+    """
     dag = circuit_to_dag(qc)
-    dag = TChinMerger().run(dag)
-    dag = CliffordMerger().run(dag)
+    
+    # 技术1: Clifford+Rz优化
+    dag = TChinMerger().run(dag)           # T门合并: T+T→S, T+T+T+T→Z
+    dag = CliffordMerger().run(dag)        # Clifford门合并
+    
+    # 技术2: 门融合优化
+    dag = SingleQubitRunCollector().run(dag)   # 收集单比特门序列
+    dag = SingleQubitGateOptimizer().run(dag)  # 优化单比特门
+    
+    # 技术3: 交换性优化
+    dag = CommutativeGateCanceller().run(dag)         # 交换性消除
+    dag = InverseGateCanceller().run(dag)             # 逆门消除: H·H=I, X·X=I
+    dag = CommutativeInverseGateCanceller().run(dag)  # 交换性逆门消除: T·Tdg=I
+    
+    # 再次执行基础优化（清理残余）
     dag = InverseGateCanceller().run(dag)
+    
     return dag_to_circuit(dag)
 
 
