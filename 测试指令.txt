@@ -149,6 +149,35 @@ Gate reduction: 6125 (61.2%)
 输出优化后的量子电路。
 
 
+五、电路深度优化规模与代价测试（200量子比特，~10000门）
+================================================================================
+
+# 电路深度优化规模测试 - 观察生成的量子电路规模
+python test/optimize/test_opt.py --file benchmark/200_10000_opt.json
+
+# 电路深度优化代价测试 - 观察输出电路门减少的比例
+python test/optimize/test_opt.py --file benchmark/200_10000_opt.json
+
+# 跳过PNG图片生成（加快测试速度）
+python test/optimize/test_opt.py --file benchmark/200_10000_opt.json --no-png
+
+预期输出：
+- 输出优化后的量子电路规模信息（比特数、门数量、电路深度）
+- 输出优化前后电路数据对比
+- 输出门减少比例（约65%）
+- 生成PNG电路图（benchmark/original_circuit.png, benchmark/optimized_circuit.png）
+
+输出方式包括：
+1. repr(circuit) - 简短描述
+2. str(circuit) - 电路名称和门列表
+3. circuit.draw(output='text') - 文本电路图
+4. circuit.to_layers() - 分层数据
+5. circuit.to_instructions() - 指令列表
+6. circuit.to_tuple_list() - 元组列表
+7. circuit.gates - 门列表
+8. circuit.draw(output='png') - PNG图片输出
+
+
 ================================================================================
                     注意事项
 ================================================================================
@@ -157,4 +186,5 @@ Gate reduction: 6125 (61.2%)
 2. 不带参数运行时，脚本会自动生成200量子比特、~10000门的大规模测试电路
 3. benchmark目录已从test/optimize/benchmack移动到项目根目录benchmark/
 4. 目录名从"benchmack"修正为"benchmark"（拼写修正）
+5. test_opt.py 支持 --no-png 参数跳过PNG图片生成
 
