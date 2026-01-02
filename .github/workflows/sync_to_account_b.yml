@@ -13,10 +13,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # 必须获取完整历史，防止 force push 冲突
-      - name: Debug Connection
+      - name: Diagnostic Test
         run: |
-          echo "Checking remote connection..."
-          git ls-remote https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git
+          echo "Testing Classic URL..."
+          git ls-remote https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git HEAD
+          
+          echo "Testing with Username..."
+          # 把下面的 'xiangdebinBackup' 替换为你账号B的真实用户名
+          git ls-remote https://xiangdebinBackup:${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git HEAD
       - name: Push to Account B
         run: |
           # 设置账号 B 的仓库地址，注意使用 Secret 变量
