@@ -13,11 +13,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # 必须获取完整历史，防止 force push 冲突
-
+      - name: Debug Connection
+        run: |
+          echo "Checking remote connection..."
+          git ls-remote https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git
       - name: Push to Account B
         run: |
           # 设置账号 B 的仓库地址，注意使用 Secret 变量
-          REMOTE_REPO="https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum"
+          REMOTE_REPO="https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git"
           
           # 添加远程仓库
           git remote add backup "$REMOTE_REPO"
