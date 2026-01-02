@@ -17,7 +17,7 @@ jobs:
       - name: Push to Account B
         run: |
           # 设置账号 B 的仓库地址，注意使用 Secret 变量
-          REMOTE_REPO="https://x-access-token:${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git"
+          REMOTE_REPO="https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum"
           
           # 添加远程仓库
           git remote add backup "$REMOTE_REPO"
