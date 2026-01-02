@@ -1,0 +1,27 @@
+name: Sync to Backup Account
+
+on:
+  push:
+    branches:
+      - main  # 或者你的主分支名称
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 必须获取完整历史，防止 force push 冲突
+
+      - name: Push to Account B
+        run: |
+          # 设置账号 B 的仓库地址，注意使用 Secret 变量
+          REMOTE_REPO="https://x-access-token:${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git"
+          
+          # 添加远程仓库
+          git remote add backup "$REMOTE_REPO"
+          
+          # 推送到账号 B 的 main 分支
+          # 注意：这里不使用 --force，如果账号 B 领先或冲突，脚本会报错，提醒你检查安全性
+          git push backup main
