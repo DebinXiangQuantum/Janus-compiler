@@ -24,16 +24,21 @@ jobs:
       - name: Push to Account B
         run: |
           # 1. 配置 Git 用户信息（防止 Git 识别为匿名用户）
+          # 1. 核心步骤：移除 Actions 自动注入的认证头（这是解决 403 的关键）
+          git config --local --unset-all http.https://github.com/.extraheader || true
+
+          # 2. 配置虚拟用户信息
           git config --global user.email "xiangdebin3@gmail.com"
           git config --global user.name "xiangdebinBackup"
 
-          # 2. 清除可能干扰的现有远程仓库
+          # 3. 重新设置远程仓库（确保地址绝对正确）
+          # 注意：URL 里面直接嵌入 Token
+          REMOTE_URL="https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git"
+          
+          # 先移除可能存在的 backup 远程，再添加
           git remote remove backup || true
-          
-          # 3. 关键点：将 Token 直接嵌入 URL，并移除可能干扰认证的 header
-          # 注意：这里我们不再依赖环境自带的认证
-          git remote add backup "https://${{ secrets.BACKUP_TOKEN }}@github.com/xiangdebinBackup/Janus-quantum.git"
-          
+          git remote add backup "$REMOTE_URL"
+
           # 4. 执行推送
-          # 使用 -u 建立追踪关系，--force 确保覆盖（如果这是你的意图）
-          git push backup main
+          # 我们不使用简单的 push，而是指定引用，确保它是推送到 B 的 main
+          git push backup HEAD:main
