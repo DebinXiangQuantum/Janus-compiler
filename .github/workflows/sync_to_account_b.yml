@@ -41,4 +41,4 @@ jobs:
 
           # 4. 执行推送
           # 我们不使用简单的 push，而是指定引用，确保它是推送到 B 的 main
-          git push backup HEAD:main --force
+          git push backup HEAD:main
